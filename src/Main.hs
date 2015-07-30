@@ -1,44 +1,58 @@
 module Main where
 
-import Options.Applicative
+import           Options.Applicative
 
 data Options = Options
-    { opt_quiet :: Bool,
+    { opt_quiet   :: Bool,
       opt_command :: Command }
   deriving Show
 
+data GenerateOptions = GenerateOptions
+  deriving Show
 data BuildOptions = BuildOptions
+  deriving Show
+data TestOptions = TestOptions
   deriving Show
 data RunOptions = RunOptions
   deriving Show
-
-data Command = Build BuildOptions
-             | Run RunOptions
+data PublishOptions = PublishOptions
   deriving Show
 
-buildOptions :: Parser Command
-buildOptions = pure $ Build BuildOptions
+data Command = Generate GenerateOptions
+             | Build BuildOptions
+             | Test TestOptions
+             | Run RunOptions
+             | Publish PublishOptions
+  deriving Show
 
-runOptions :: Parser Command
-runOptions = pure $ Run RunOptions
+parseGenerateOptions :: Parser Command
+parseGenerateOptions = pure $ Generate GenerateOptions
 
+parseBuildOptions :: Parser Command
+parseBuildOptions = pure $ Build BuildOptions
 
-build :: IO ()
-build = putStrLn "build"
+parseTestOptions :: Parser Command
+parseTestOptions = pure $ Test TestOptions
 
-run :: IO ()
-run = putStrLn "run"
+parseRunOptions :: Parser Command
+parseRunOptions = pure $ Run RunOptions
+
+parsePublishOptions :: Parser Command
+parsePublishOptions = pure $ Publish PublishOptions
 
 commandParser :: Parser Command
-commandParser = subparser
-    ( command "build" (info buildOptions idm)
-   <> command "run"   (info runOptions idm))
+commandParser = subparser $ mconcat
+    [
+      command "generate" (info parseGenerateOptions idm)
+    , command "build"    (info parseBuildOptions idm)
+    , command "test"     (info parseTestOptions idm)
+    , command "run"      (info parseRunOptions idm)
+    , command "publish"  (info parsePublishOptions idm)
+    ]
 
 options :: Parser Options
 options = Options
-     <$> switch
-         ( long "quiet"
-        <> help "Whether to be quiet" )
+     <$> switch (long "debug" <> help "give debug output")
      <*> commandParser
 
 eden :: Options -> IO ()
@@ -48,7 +62,8 @@ eden = print
 main :: IO ()
 main = execParser opts >>= eden
   where
-    opts = info options
-      ( fullDesc
-     <> progDesc "Print a greeting for TARGET"
-     <> header "hello - a test for optparse-applicative" )
+    opts = info options help
+    help = fullDesc <> progDesc description
+
+description :: String
+description = "Euler Development ENgine"
