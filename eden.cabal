@@ -1,7 +1,7 @@
 name:                eden
 version:             0.1.0.0
 licence:             GPL
-license-file:        ../LICENSE
+license-file:        LICENSE
 author:              Tom Sydney Kerckhove
 maintainer:          syd.kerckhove@gmail.com
 copyright:           2015
@@ -13,13 +13,14 @@ executable eden
   main-is:             Main.hs
   hs-source-dirs:      src
   default-language:    Haskell2010
-  build-depends:       base >=4.8 && <4.9
+  build-depends:       base                 >= 4.8  && < 4.9
+                     , optparse-applicative >= 0.11 && < 0.12
 
 test-suite eden-tests
   type:                exitcode-stdio-1.0
   main-is:             TestMain.hs
   hs-source-dirs:      src, test
   default-language:    Haskell2010
-  build-depends:       base  >= 4.8  && <4.9
-                     , HTF   >= 0.13 && <0.14
-                     , HUnit >= 1.2  && <1.3
+  build-depends:       base  >= 4.8  && < 4.9
+                     , HTF   >= 0.13 && < 0.14
+                     , HUnit >= 1.2  && < 1.3
