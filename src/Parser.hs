@@ -24,7 +24,7 @@ parseGlobalOptions = GlobalOptions
 parseCommand :: Parser Command
 parseCommand = subparser $ mconcat
     [
-      command "init"     (info parseInit idm)
+      command "init"     parseInit
     , command "generate" (info parseGenerate idm)
     , command "build"    (info parseBuild idm)
     , command "test"     (info parseTest idm)
@@ -32,8 +32,14 @@ parseCommand = subparser $ mconcat
     , command "publish"  (info parsePublish idm)
     ]
 
-parseInit :: Parser Command
-parseInit = pure $ Init InitOptions
+
+parseInit :: ParserInfo Command
+parseInit = info parser modifier
+  where
+    parser = pure $ Init InitOptions
+    modifier = fullDesc 
+            <> progDesc "Initialise an eden repository"
+            
 
 parseGenerate :: Parser Command
 parseGenerate = Generate <$> parseGenerateOptions
