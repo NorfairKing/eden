@@ -46,23 +46,30 @@ data PublishOptions = PublishOptions
 
 --[ Monads ]--
 
-type EdenGenerate   = ReaderT (GlobalOptions, GenerateOptions)  IO
-type EdenBuild      = ReaderT (GlobalOptions, BuildOptions)     IO
-type EdenTest       = ReaderT (GlobalOptions, TestOptions)      IO
-type EdenRun        = ReaderT (GlobalOptions, RunOptions)       IO
-type EdenPublish    = ReaderT (GlobalOptions, PublishOptions)   IO
+type Eden c = ReaderT (GlobalOptions, c) IO
+
+type EdenGenerate   = Eden GenerateOptions
+type EdenBuild      = Eden BuildOptions
+type EdenTest       = Eden TestOptions
+type EdenRun        = Eden RunOptions   
+type EdenPublish    = Eden PublishOptions
+
+runEden :: Eden c a -> (GlobalOptions, c) -> IO a
+runEden = runReaderT
 
 runEdenGenerator :: EdenGenerate a -> (GlobalOptions, GenerateOptions) -> IO a
-runEdenGenerator = runReaderT
+runEdenGenerator = runEden
 
 runEdenBuilder :: EdenBuild a -> (GlobalOptions, BuildOptions) -> IO a
-runEdenBuilder = runReaderT
+runEdenBuilder = runEden
 
 runEdenTester :: EdenTest a -> (GlobalOptions, TestOptions) -> IO a
-runEdenTester = runReaderT
+runEdenTester = runEden
 
 runEdenRunner :: EdenRun a -> (GlobalOptions, RunOptions) -> IO a
-runEdenRunner = runReaderT
+runEdenRunner = runEden
 
 runEdenPublisher :: EdenPublish a -> (GlobalOptions, PublishOptions) -> IO a
-runEdenPublisher = runReaderT
+runEdenPublisher = runEden
+
+
