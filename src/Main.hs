@@ -1,9 +1,10 @@
 module Main where
 
-import           Parser
-import           Types
 import           Generate
 import           Init
+import           Parser
+import           Paths
+import           Types
 
 
 main :: IO ()
@@ -13,16 +14,21 @@ main = do
     let g = opt_global options
         c = opt_command options
 
-    case c of
-        Init o      -> runEdenInitialiser   initE       (g, o)
-        Generate o  -> runEdenGenerator     generate    (g, o)
-        Build o     -> runEdenBuilder       build       (g, o)
-        Test o      -> runEdenTester        test        (g, o)
-        Run o       -> runEdenRunner        run         (g, o)
-        Publish o   -> runEdenPublisher     publish     (g, o)
+    ee <- case c of
+        Init o      -> runEden initE       (g, o)
+        Generate o  -> runEden generate    (g, o)
+        Build o     -> runEden build       (g, o)
+        Test o      -> runEden test        (g, o)
+        Run o       -> runEden run         (g, o)
+        Publish o   -> runEden publish     (g, o)
+    case ee of
+        Left error  -> putStrLn error
+        Right ()    -> return ()
 
 build :: EdenBuild ()
-build = return ()
+build = do
+    mroot <- edenRoot
+    liftIO $ print mroot
 
 test :: EdenTest ()
 test = return ()

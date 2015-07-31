@@ -1,12 +1,15 @@
 module Types
     (
       module Types
-    , module Control.Monad.Reader
+    , module Control.Monad.Except
     , module Control.Monad.IO.Class
+    , module Control.Monad.Reader
     ) where
 
+import           Control.Monad.Except   (ExceptT, runExceptT, throwError)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Reader   (ReaderT, ask, asks, runReaderT)
+
 
 
 --[ Command line options ]--
@@ -23,8 +26,7 @@ data GlobalOptions = GlobalOptions {
 data Command = Init InitOptions
              | Generate GenerateOptions
              | Build BuildOptions
-             | Test TestOptions
-             | Run RunOptions
+             | Test TestOptions | Run RunOptions
              | Publish PublishOptions
   deriving Show
 
@@ -56,7 +58,9 @@ data PublishOptions = PublishOptions
 
 --[ Monads ]--
 
-type Eden c = ReaderT (GlobalOptions, c) IO
+type Eden c = ExceptT EdenError (ReaderT (GlobalOptions, c) IO)
+
+type EdenError = String
 
 type EdenInit       = Eden InitOptions
 type EdenGenerate   = Eden GenerateOptions
@@ -65,26 +69,8 @@ type EdenTest       = Eden TestOptions
 type EdenRun        = Eden RunOptions
 type EdenPublish    = Eden PublishOptions
 
-runEden :: Eden c a -> (GlobalOptions, c) -> IO a
-runEden = runReaderT
-
-runEdenInitialiser :: EdenInit a -> (GlobalOptions, InitOptions) -> IO a
-runEdenInitialiser = runEden
-
-runEdenGenerator :: EdenGenerate a -> (GlobalOptions, GenerateOptions) -> IO a
-runEdenGenerator = runEden
-
-runEdenBuilder :: EdenBuild a -> (GlobalOptions, BuildOptions) -> IO a
-runEdenBuilder = runEden
-
-runEdenTester :: EdenTest a -> (GlobalOptions, TestOptions) -> IO a
-runEdenTester = runEden
-
-runEdenRunner :: EdenRun a -> (GlobalOptions, RunOptions) -> IO a
-runEdenRunner = runEden
-
-runEdenPublisher :: EdenPublish a -> (GlobalOptions, PublishOptions) -> IO a
-runEdenPublisher = runEden
+runEden :: Eden c a -> (GlobalOptions, c) -> IO (Either EdenError a)
+runEden func opts = runReaderT (runExceptT func) opts
 
 askEden :: (c -> a) -> Eden c a
 askEden func = do
