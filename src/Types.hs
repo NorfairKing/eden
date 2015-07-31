@@ -62,7 +62,7 @@ type EdenInit       = Eden InitOptions
 type EdenGenerate   = Eden GenerateOptions
 type EdenBuild      = Eden BuildOptions
 type EdenTest       = Eden TestOptions
-type EdenRun        = Eden RunOptions   
+type EdenRun        = Eden RunOptions
 type EdenPublish    = Eden PublishOptions
 
 runEden :: Eden c a -> (GlobalOptions, c) -> IO a
