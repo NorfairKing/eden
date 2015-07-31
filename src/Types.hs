@@ -20,14 +20,24 @@ data GlobalOptions = GlobalOptions {
         opt_quiet :: Bool
     } deriving Show
 
-data Command = Generate GenerateOptions
+data Command = Init InitOptions
+             | Generate GenerateOptions
              | Build BuildOptions
              | Test TestOptions
              | Run RunOptions
              | Publish PublishOptions
   deriving Show
 
-data GenerateOptions = GenerateOptions
+data InitOptions = InitOptions
+  deriving Show
+
+data GenerateOptions = GenerateOptions {
+        generate_target :: GenerationTarget
+    }
+  deriving Show
+
+data GenerationTarget = Problem Int
+                      | Solution Int Language
   deriving Show
 
 data BuildOptions = BuildOptions
@@ -48,6 +58,7 @@ data PublishOptions = PublishOptions
 
 type Eden c = ReaderT (GlobalOptions, c) IO
 
+type EdenInit       = Eden InitOptions
 type EdenGenerate   = Eden GenerateOptions
 type EdenBuild      = Eden BuildOptions
 type EdenTest       = Eden TestOptions
@@ -56,6 +67,9 @@ type EdenPublish    = Eden PublishOptions
 
 runEden :: Eden c a -> (GlobalOptions, c) -> IO a
 runEden = runReaderT
+
+runEdenInitialiser :: EdenInit a -> (GlobalOptions, InitOptions) -> IO a
+runEdenInitialiser = runEden
 
 runEdenGenerator :: EdenGenerate a -> (GlobalOptions, GenerateOptions) -> IO a
 runEdenGenerator = runEden
@@ -71,5 +85,18 @@ runEdenRunner = runEden
 
 runEdenPublisher :: EdenPublish a -> (GlobalOptions, PublishOptions) -> IO a
 runEdenPublisher = runEden
+
+askEden :: (c -> a) -> Eden c a
+askEden func = do
+    (_, o) <- ask
+    return $ func o
+
+
+--[ Euler Problems ]--
+
+type Problem = Int
+type Language = String
+
+type Solution = (Problem, Language)
 
 

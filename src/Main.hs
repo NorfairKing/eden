@@ -2,6 +2,8 @@ module Main where
 
 import           Parser
 import           Types
+import           Generate
+import           Init
 
 
 main :: IO ()
@@ -12,15 +14,12 @@ main = do
         c = opt_command options
 
     case c of
-        Generate o  -> runEdenGenerator generate    (g, o)
-        Build o     -> runEdenBuilder   build       (g, o)
-        Test o      -> runEdenTester    test        (g, o)
-        Run o       -> runEdenRunner    run         (g, o)
-        Publish o   -> runEdenPublisher publish     (g, o)
-
-
-generate :: EdenGenerate ()
-generate = return ()
+        Init o      -> runEdenInitialiser   initE       (g, o)
+        Generate o  -> runEdenGenerator     generate    (g, o)
+        Build o     -> runEdenBuilder       build       (g, o)
+        Test o      -> runEdenTester        test        (g, o)
+        Run o       -> runEdenRunner        run         (g, o)
+        Publish o   -> runEdenPublisher     publish     (g, o)
 
 build :: EdenBuild ()
 build = return ()

@@ -24,25 +24,50 @@ parseGlobalOptions = GlobalOptions
 parseCommand :: Parser Command
 parseCommand = subparser $ mconcat
     [
-      command "generate" (info parseGenerateOptions idm)
-    , command "build"    (info parseBuildOptions idm)
-    , command "test"     (info parseTestOptions idm)
-    , command "run"      (info parseRunOptions idm)
-    , command "publish"  (info parsePublishOptions idm)
+      command "init"     (info parseInit idm)
+    , command "generate" (info parseGenerate idm)
+    , command "build"    (info parseBuild idm)
+    , command "test"     (info parseTest idm)
+    , command "run"      (info parseRun idm)
+    , command "publish"  (info parsePublish idm)
     ]
 
-parseGenerateOptions :: Parser Command
-parseGenerateOptions = pure $ Generate GenerateOptions
+parseInit :: Parser Command
+parseInit = pure $ Init InitOptions
 
-parseBuildOptions :: Parser Command
-parseBuildOptions = pure $ Build BuildOptions
+parseGenerate :: Parser Command
+parseGenerate = Generate <$> parseGenerateOptions
 
-parseTestOptions :: Parser Command
-parseTestOptions = pure $ Test TestOptions
+parseGenerateOptions :: Parser GenerateOptions
+parseGenerateOptions = GenerateOptions <$> parseGenerationTarget
 
-parseRunOptions :: Parser Command
-parseRunOptions = pure $ Run RunOptions
+parseGenerationTarget :: Parser GenerationTarget
+parseGenerationTarget = subparser $ mconcat
+    [
+      command "problem" (info parseProblemTarget idm)
+    ]
 
-parsePublishOptions :: Parser Command
-parsePublishOptions = pure $ Publish PublishOptions
+parseProblemTarget :: Parser GenerationTarget
+parseProblemTarget = Problem
+    <$> argument auto (help "the number of the problem to generate for"
+                    <> metavar "PROBLEM")
+
+parseSolutionTarget :: Parser GenerationTarget
+parseSolutionTarget = Solution
+    <$> argument auto (help "the number of the problem to generate for"
+                    <> metavar "PROBLEM")
+    <*> argument auto (help "the language of the solution to generate for"
+                    <> metavar "LANGUAGE")
+
+parseBuild :: Parser Command
+parseBuild = pure $ Build BuildOptions
+
+parseTest :: Parser Command
+parseTest = pure $ Test TestOptions
+
+parseRun :: Parser Command
+parseRun = pure $ Run RunOptions
+
+parsePublish :: Parser Command
+parsePublish = pure $ Publish PublishOptions
 
