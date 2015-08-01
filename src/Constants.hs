@@ -8,3 +8,9 @@ edenRootName = '.' : edenName
 
 paddingLength :: Int
 paddingLength = 3
+
+libDirName :: String
+libDirName = "lib"
+
+testDirName :: String
+testDirName = "test"

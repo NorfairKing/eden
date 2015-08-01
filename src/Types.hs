@@ -26,7 +26,8 @@ data GlobalOptions = GlobalOptions {
 data Command = Init InitOptions
              | Generate GenerateOptions
              | Build BuildOptions
-             | Test TestOptions | Run RunOptions
+             | Test TestOptions
+             | Run RunOptions
              | Publish PublishOptions
   deriving Show
 
@@ -40,6 +41,9 @@ data GenerateOptions = GenerateOptions {
 
 data GenerationTarget = Problem Int
                       | Solution Int Language
+                      | Library Language
+                      | Tests Language
+                      | Environment Language
   deriving Show
 
 data BuildOptions = BuildOptions
