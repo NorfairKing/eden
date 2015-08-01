@@ -4,8 +4,20 @@ import           System.Directory      (getCurrentDirectory,
                                         getDirectoryContents)
 import           System.FilePath.Posix (takeDirectory, (</>))
 
+import           Data.Maybe            (isJust)
+
 import           Constants
 import           Types
+
+checkEden :: Eden c ()
+checkEden = do
+    b <- inEden
+    if b
+    then return ()
+    else throwError "Not in an Eden repository."
+
+inEden :: Eden c Bool
+inEden = fmap isJust maybeEdenRoot
 
 edenRoot :: Eden c FilePath
 edenRoot = do

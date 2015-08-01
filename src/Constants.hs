@@ -6,3 +6,5 @@ edenName = "eden"
 edenRootName :: String
 edenRootName = '.' : edenName
 
+paddingLength :: Int
+paddingLength = 3

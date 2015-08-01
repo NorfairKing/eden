@@ -37,9 +37,9 @@ parseInit :: ParserInfo Command
 parseInit = info parser modifier
   where
     parser = pure $ Init InitOptions
-    modifier = fullDesc 
+    modifier = fullDesc
             <> progDesc "Initialise an eden repository"
-            
+
 
 parseGenerate :: Parser Command
 parseGenerate = Generate <$> parseGenerateOptions
@@ -51,6 +51,7 @@ parseGenerationTarget :: Parser GenerationTarget
 parseGenerationTarget = subparser $ mconcat
     [
       command "problem" (info parseProblemTarget idm)
+    , command "solution" (info parseSolutionTarget idm)
     ]
 
 parseProblemTarget :: Parser GenerationTarget
@@ -62,7 +63,7 @@ parseSolutionTarget :: Parser GenerationTarget
 parseSolutionTarget = Solution
     <$> argument auto (help "the number of the problem to generate for"
                     <> metavar "PROBLEM")
-    <*> argument auto (help "the language of the solution to generate for"
+    <*> argument str (help "the language of the solution to generate for"
                     <> metavar "LANGUAGE")
 
 parseBuild :: Parser Command
