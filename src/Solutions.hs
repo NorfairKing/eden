@@ -1,5 +1,6 @@
 module Solutions where
 
+import           System.Directory      (getDirectoryContents)
 import           System.FilePath.Posix ((</>))
 
 import           Constants
@@ -20,6 +21,16 @@ problemDir p = do
 
 problemDirName :: Problem -> FilePath
 problemDirName = pad
+
+solutions :: Problem -> Eden c [FilePath]
+solutions p = do
+    dir <- problemDir p
+    cts <- liftIO $ getDirectoryContents dir
+    return $ filter realDir cts
+  where
+    realDir d | d == "."  = False
+              | d == ".." = False
+              | otherwise = True
 
 
 --[ Solutions ]--

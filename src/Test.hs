@@ -26,10 +26,19 @@ testAll :: EdenTest ()
 testAll = undefined
 
 testLibrary :: Language -> EdenTest ()
-testLibrary l = undefined
+testLibrary l = do
+    buildLib l
+
+    md <- testsDir l
+    mf <- testMakefilePath l
+    let rule = Just defaultTestRuleName
+
+    make md mf rule
 
 testProblem :: Problem -> EdenTest ()
-testProblem p = undefined
+testProblem p = do
+    allSolutions <- solutions p
+    mapM_ (testSolution p) allSolutions
 
 testSolution :: Problem -> Language -> EdenTest ()
 testSolution p l = do
