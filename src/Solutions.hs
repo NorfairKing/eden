@@ -1,7 +1,9 @@
 module Solutions where
 
-import           System.Directory      (getDirectoryContents)
+import           System.Directory      (doesFileExist, getDirectoryContents)
 import           System.FilePath.Posix ((</>))
+
+import           Control.Monad         (filterM)
 
 import           Constants
 import           Paths
@@ -117,6 +119,16 @@ publishDir :: Eden c FilePath
 publishDir = do
     root <- edenRoot
     return $ root </> publishingDirName
+
+explanations :: Eden c [Problem]
+explanations = do
+    pbs <- problems
+    filterM containsExplanation pbs
+  where
+    containsExplanation :: Problem -> Eden c Bool
+    containsExplanation p = do
+        probDir <- problemDir p
+        liftIO $ doesFileExist $ probDir </> defaultExplanationName
 
 
 --[ Utils ]--

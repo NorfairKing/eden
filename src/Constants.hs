@@ -38,3 +38,9 @@ defaultTestSuiteName = "testsuite.bin"
 
 defaultTestRuleName :: String
 defaultTestRuleName = "test"
+
+defaultExplanationName :: String
+defaultExplanationName = "explanation.tex"
+
+publishImportsFileName :: String
+publishImportsFileName = "explanations.tex"
