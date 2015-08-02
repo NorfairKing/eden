@@ -29,7 +29,7 @@ bin:
 love:
 	@echo "not war"
 	
-DIRTY_EXT = *.o *.hi *.bin
+DIRTY_EXT = src/*.o src/*.hi src/*.bin
 
 clean:
 	rm -f $(BIN) $(DIRTY_EXT)

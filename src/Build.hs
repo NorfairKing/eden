@@ -1,5 +1,6 @@
 module Build where
 
+import           Eden
 import           Paths
 import           Solutions
 import           Types
@@ -7,8 +8,6 @@ import           Utils
 
 build :: EdenBuild ()
 build = do
-    checkEden
-
     target <- askEden build_target
 
     buildLib $ build_target_language target

@@ -4,6 +4,7 @@ import           System.Directory      (doesFileExist)
 import           System.FilePath.Posix ((</>))
 
 import           Constants
+import           Eden
 import           Paths
 import           Solutions
 import           Types
@@ -11,8 +12,6 @@ import           Utils
 
 run :: EdenRun ()
 run = do
-    checkEden
-
     target <- askEden run_target
     runTarget target
 

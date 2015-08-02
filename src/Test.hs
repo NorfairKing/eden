@@ -4,14 +4,13 @@ import           Paths
 
 import           Build
 import           Constants
+import           Eden
 import           Solutions
 import           Types
 import           Utils
 
 test :: EdenTest ()
 test = do
-    checkEden
-
     target <- askEden test_target
     testTarget target
 
