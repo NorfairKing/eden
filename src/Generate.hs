@@ -16,6 +16,7 @@ generate = do
         Solution p l    -> generateSolution p l
         Library l       -> generateLibrary l
         Tests l         -> generateTests l
+        BuildDir l      -> generateBuild l
         Environment l   -> generateEnvironment l
 
 
@@ -43,10 +44,17 @@ generateTests l = do
     liftIO $ createDirectoryIfMissing True dir
 
 
+generateBuild :: Language -> EdenGenerate ()
+generateBuild l = do
+    dir <- buildFilesDir l
+    liftIO $ createDirectoryIfMissing True dir
+
+
 generateEnvironment :: Language -> EdenGenerate ()
 generateEnvironment l = do
     generateLibrary l
     generateTests l
+    generateBuild l
 
 
 

@@ -39,14 +39,25 @@ data GenerateOptions = GenerateOptions {
     }
   deriving Show
 
-data GenerationTarget = Problem Int
-                      | Solution Int Language
+data GenerationTarget = Problem Problem
+                      | Solution Problem Language
                       | Library Language
                       | Tests Language
+                      | BuildDir Language
                       | Environment Language
   deriving Show
 
-data BuildOptions = BuildOptions
+data BuildOptions = BuildOptions {
+        build_target :: BuildTarget
+    }
+  deriving Show
+
+data BuildTarget = BuildTarget {
+        target_problem  :: Problem
+    ,   target_language :: Language
+    ,   target_makefile :: Maybe FilePath
+    ,   target_makerule :: Maybe String
+    }
   deriving Show
 
 data TestOptions = TestOptions

@@ -51,6 +51,24 @@ testsDir l = do
     dir <- testDir
     return $ dir </> l
 
+--[ Builds ]--
+
+buildDir :: Eden c FilePath
+buildDir = do
+    root <- edenRoot
+    return $ root </> buildDirName
+
+buildFilesDir :: Language -> Eden c FilePath
+buildFilesDir l = do
+    dir <- buildDir
+    return $ dir </> l
+
+makefilePath :: Language -> Eden c FilePath
+makefilePath l = do
+    dir <- buildFilesDir l
+    return $ dir </> defaultMakefileName
+
+
 
 --[ Utils ]--
 

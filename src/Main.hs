@@ -1,5 +1,6 @@
 module Main where
 
+import           Build
 import           Generate
 import           Init
 import           Parser
@@ -24,11 +25,6 @@ main = do
     case ee of
         Left error  -> putStrLn error
         Right ()    -> return ()
-
-build :: EdenBuild ()
-build = do
-    mroot <- edenRoot
-    liftIO $ print mroot
 
 test :: EdenTest ()
 test = return ()

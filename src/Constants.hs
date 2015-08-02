@@ -14,3 +14,9 @@ libDirName = "lib"
 
 testDirName :: String
 testDirName = "test"
+
+buildDirName :: String
+buildDirName = "build"
+
+defaultMakefileName :: String
+defaultMakefileName = "makefile"
