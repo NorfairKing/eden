@@ -45,6 +45,7 @@ data GenerationTarget = Problem Problem
                       | Tests Language
                       | BuildDir Language
                       | Environment Language
+                      | Publishing
   deriving Show
 
 data BuildOptions = BuildOptions {
