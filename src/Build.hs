@@ -10,32 +10,21 @@ build = do
     checkEden
 
     target <- askEden build_target
+
+    buildLib $ build_target_language target
     buildTarget target
+
+buildLib :: Language -> EdenBuild ()
+buildLib l = do
+    md <- libraryDir l
+    mf <- libMakefilePath l
+    make md mf Nothing
 
 buildTarget :: BuildTarget -> EdenBuild ()
 buildTarget bt = do
-    md <- solutionDir (target_problem bt) (target_language bt)
-    mf <- case target_makefile bt of
-            Nothing -> makefilePath $ target_language bt
+    md <- solutionDir (build_target_problem bt) (build_target_language bt)
+    mf <- case build_target_makefile bt of
+            Nothing -> makefilePath $ build_target_language bt
             Just f  -> return f
-    let mr = target_makerule bt
+    let mr = build_target_makerule bt
     make md mf mr
-
-
-make :: FilePath     -- Make directory
-     -> FilePath     -- Make file
-     -> Maybe String -- Make rule
-     -> EdenBuild ()
-make dir makefile mrule = do
-    let rulestr = case mrule of
-                    Nothing -> ""
-                    Just rule -> rule
-    let cmd = unwords $
-            [
-                "make"
-            ,   "--directory"   , dir
-            ,   "--file"        , makefile
-            ,   rulestr
-            ]
-    runRaw cmd
-

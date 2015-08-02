@@ -26,3 +26,9 @@ defaultExecutable = "solution.bin"
 
 defaultInputFileName :: String
 defaultInputFileName = "input.txt"
+
+defaultTestSuiteName :: String
+defaultTestSuiteName = "testsuite.bin"
+
+defaultTestRuleName :: String
+defaultTestRuleName = "test"

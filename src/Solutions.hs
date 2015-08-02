@@ -5,7 +5,6 @@ import           System.FilePath.Posix ((</>))
 import           Constants
 import           Paths
 import           Types
-
 --[ Language ]--
 
 
@@ -43,6 +42,10 @@ libraryDir l = do
     dir <- libDir
     return $ dir </> l
 
+libMakefilePath :: Language -> Eden c FilePath
+libMakefilePath l = do
+    dir <- libraryDir l
+    return $ dir </> defaultMakefileName
 
 --[ Tests ]--
 
@@ -55,6 +58,11 @@ testsDir :: Language -> Eden c FilePath
 testsDir l = do
     dir <- testDir
     return $ dir </> l
+
+testMakefilePath :: Language -> Eden c FilePath
+testMakefilePath l = do
+    dir <- testsDir l
+    return $ dir </> defaultMakefileName
 
 --[ Builds ]--
 

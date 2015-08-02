@@ -52,14 +52,22 @@ data BuildOptions = BuildOptions {
     } deriving Show
 
 data BuildTarget = BuildTarget {
-        target_problem  :: Problem
-    ,   target_language :: Language
-    ,   target_makefile :: Maybe FilePath
-    ,   target_makerule :: Maybe String
+        build_target_problem  :: Problem
+    ,   build_target_language :: Language
+    ,   build_target_makefile :: Maybe FilePath
+    ,   build_target_makerule :: Maybe String
     } deriving Show
 
-data TestOptions = TestOptions
-  deriving Show
+data TestOptions = TestOptions {
+        test_target :: TestTarget
+    } deriving Show
+
+data TestTarget = TestTargetAll
+                | TestTargetLibrary Language
+                | TestTargetProblem Problem
+                | TestTargetSolution Problem Language
+    deriving Show
+
 
 data RunOptions = RunOptions {
         run_target :: RunTarget

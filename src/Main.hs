@@ -5,6 +5,7 @@ import           Generate
 import           Init
 import           Parser
 import           Run
+import           Test
 import           Types
 
 
@@ -25,9 +26,6 @@ main = do
     case ee of
         Left error  -> putStrLn error
         Right ()    -> return ()
-
-test :: EdenTest ()
-test = return ()
 
 publish :: EdenPublish ()
 publish = return ()

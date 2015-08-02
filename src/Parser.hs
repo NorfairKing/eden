@@ -29,7 +29,7 @@ parseCommand = hsubparser $ mconcat
       command "init"     parseInit
     , command "generate" parseGenerate
     , command "build"    parseBuild
-    , command "test"     (info parseTest idm)
+    , command "test"     parseTest
     , command "run"      parseRun
     , command "publish"  (info parsePublish idm)
     ]
@@ -129,8 +129,44 @@ parseBuildTarget = BuildTarget
         <> value Nothing
         <> metavar "MAKERULE")
 
-parseTest :: Parser Command
-parseTest = pure $ Test TestOptions
+parseTest :: ParserInfo Command
+parseTest = info parser modifier
+  where
+    parser = Test <$> parseTestOptions
+    modifier = fullDesc
+            <> progDesc "Test a test target (all, entire library, single solution)"
+
+parseTestOptions :: Parser TestOptions
+parseTestOptions = TestOptions <$> parseTestTarget
+
+parseTestTarget :: Parser TestTarget
+parseTestTarget = hsubparser $ mconcat
+    [
+        command "all"       $ info parseAllTestTarget idm
+    ,   command "library"   $ info parseLibraryTestTarget idm
+    ,   command "problem"   $ info parseProblemTestTarget idm
+    ,   command "solution"  $ info parseSolutionTestTarget idm
+    ]
+
+parseAllTestTarget :: Parser TestTarget
+parseAllTestTarget = pure TestTargetAll
+
+parseLibraryTestTarget :: Parser TestTarget
+parseLibraryTestTarget = TestTargetLibrary
+    <$> argument str (help "the library to test"
+                    <> metavar "LANGUAGE")
+
+parseProblemTestTarget :: Parser TestTarget
+parseProblemTestTarget = TestTargetProblem
+    <$> argument auto (help "the problem to test"
+                    <> metavar "PROBLEM")
+
+parseSolutionTestTarget :: Parser TestTarget
+parseSolutionTestTarget = TestTargetSolution
+    <$> argument auto (help "the problem to test"
+                    <> metavar "PROBLEM")
+    <*> argument str (help "the language of the solution to test"
+                    <> metavar "LANGUAGE")
 
 parseRun :: ParserInfo Command
 parseRun = info parser modifier

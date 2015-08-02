@@ -24,3 +24,22 @@ printIf bool str = do
     if b
     then liftIO $ putStrLn str
     else return ()
+
+
+make :: FilePath     -- Make directory
+     -> FilePath     -- Make file
+     -> Maybe String -- Make rule
+     -> EdenBuild ()
+make dir makefile mrule = do
+    let rulestr = case mrule of
+                    Nothing -> ""
+                    Just rule -> rule
+    let cmd = unwords $
+            [
+                "make"
+            ,   "--directory"   , dir
+            ,   "--file"        , makefile
+            ,   rulestr
+            ]
+    runRaw cmd
+
