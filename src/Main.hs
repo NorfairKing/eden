@@ -4,6 +4,7 @@ import           Build
 import           Generate
 import           Init
 import           Parser
+import           Publish
 import           Run
 import           Test
 import           Types
@@ -26,6 +27,3 @@ main = do
     case ee of
         Left error  -> putStrLn error
         Right ()    -> return ()
-
-publish :: EdenPublish ()
-publish = return ()
