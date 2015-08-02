@@ -20,3 +20,6 @@ buildDirName = "build"
 
 defaultMakefileName :: String
 defaultMakefileName = "makefile"
+
+defaultExecutable :: String
+defaultExecutable = "solution.bin"

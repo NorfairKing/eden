@@ -8,7 +8,7 @@ runCommand str = readProcess bin args ""
   where (bin:args) = words str
 
 runSilent :: String -> IO ()
-runSilent cmd = undefined
+runSilent cmd = undefined cmd
 
 runRaw :: String -> IO ()
 runRaw cmd = do

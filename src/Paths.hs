@@ -2,7 +2,8 @@ module Paths where
 
 import           System.Directory      (getCurrentDirectory,
                                         getDirectoryContents)
-import           System.FilePath.Posix (takeDirectory, (</>))
+import           System.Environment    (setEnv)
+import           System.FilePath.Posix (takeDirectory)
 
 import           Data.Maybe            (isJust)
 
@@ -11,10 +12,10 @@ import           Types
 
 checkEden :: Eden c ()
 checkEden = do
-    b <- inEden
-    if b
-    then return ()
-    else throwError "Not in an Eden repository."
+    mroot <- maybeEdenRoot
+    case mroot of
+        Nothing -> throwError "Not in an Eden repository."
+        Just rt -> liftIO $ setEnv "EDEN_ROOT" rt
 
 inEden :: Eden c Bool
 inEden = fmap isJust maybeEdenRoot

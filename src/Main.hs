@@ -4,7 +4,6 @@ import           Build
 import           Generate
 import           Init
 import           Parser
-import           Paths
 import           Types
 
 
