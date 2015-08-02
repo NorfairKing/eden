@@ -1,10 +1,15 @@
 module Generate where
 
-import           System.Directory (createDirectoryIfMissing)
+import           System.Directory          (createDirectoryIfMissing)
+import           System.FilePath.Posix     ((</>))
+import           Text.Heredoc
+
+import           Language.Haskell.TH.Quote
 
 import           Eden
 import           Paths
 import           Solutions
+import           TH
 import           Types
 
 generate :: EdenGenerate ()
@@ -60,3 +65,12 @@ generatePublishing :: EdenGenerate ()
 generatePublishing = do
     dir <- publishDir
     liftIO $ createDirectoryIfMissing True dir
+    generateStarterPublishingFiles
+
+generateStarterPublishingFiles :: EdenGenerate ()
+generateStarterPublishingFiles = do
+    dir <- publishDir
+    liftIO $ writeFile starterMainTex $ dir </> "main.tex"
+
+starterMainTex :: String
+starterMainTex = [litFile|tex/main.tex|]

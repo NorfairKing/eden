@@ -6,9 +6,7 @@ import           Paths_eden            (version)
 import           System.Directory      (createDirectoryIfMissing,
                                         getCurrentDirectory)
 import           System.FilePath.Posix ((</>))
-import           System.IO             (Handle,
-                                        IOMode(WriteMode),
-                                        hPutStrLn,
+import           System.IO             (Handle, IOMode (WriteMode), hPutStrLn,
                                         withFile)
 
 import           Constants
