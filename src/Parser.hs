@@ -31,7 +31,7 @@ parseCommand = hsubparser $ mconcat
     , command "build"    parseBuild
     , command "test"     parseTest
     , command "run"      parseRun
-    , command "publish"  (info parsePublish idm)
+    , command "publish"  parsePublish
     ]
 
 
@@ -62,6 +62,7 @@ parseGenerationTarget = hsubparser $ mconcat
     , command "tests"       (info parseTestsTarget idm)
     , command "build"       (info parseBuildDirTarget idm)
     , command "environment" (info parseEnvironmentTarget idm)
+    , command "writeups"    (info parsePublishingTarget idm)
     ]
 
 parseProblemTarget :: Parser GenerationTarget
@@ -96,10 +97,12 @@ parseEnvironmentTarget = Environment
     <$> argument str (help "the language to generate a development environment for"
                     <> metavar "LANGUAGE")
 
+parsePublishingTarget :: Parser GenerationTarget
+parsePublishingTarget = pure Publishing
 
 
 parseBuild :: ParserInfo Command
-parseBuild = info (helper <*> parser) modifier
+parseBuild = info parser modifier
   where
     parser = Build <$> parseBuildOptions
     modifier = fullDesc
@@ -201,6 +204,9 @@ parseRunTarget = RunTarget
         <> value Nothing
         <> metavar "INPUT_FILE")
 
-parsePublish :: Parser Command
-parsePublish = pure $ Publish PublishOptions
-
+parsePublish :: ParserInfo Command
+parsePublish = info parser modifier
+  where
+    parser = pure $ Publish PublishOptions
+    modifier = fullDesc
+            <> progDesc "Publish writeups."

@@ -111,6 +111,14 @@ defaultInputFilePath p = do
     return $ dir </> defaultInputFileName
 
 
+--[ Publish ]--
+
+publishDir :: Eden c FilePath
+publishDir = do
+    root <- edenRoot
+    return $ root </> publishingDirName
+
+
 --[ Utils ]--
 
 padN :: Int -> Int -> String

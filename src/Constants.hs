@@ -21,6 +21,9 @@ testDirName = "test"
 buildDirName :: String
 buildDirName = "build"
 
+publishingDirName :: String
+publishingDirName = "writeup"
+
 defaultMakefileName :: String
 defaultMakefileName = "makefile"
 

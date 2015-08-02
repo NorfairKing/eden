@@ -18,6 +18,7 @@ generate = do
         Tests l         -> generateTests l
         BuildDir l      -> generateBuild l
         Environment l   -> generateEnvironment l
+        Publishing      -> generatePublishing
 
 
 generateProblem :: Problem -> EdenGenerate ()
@@ -55,6 +56,11 @@ generateEnvironment l = do
     generateLibrary l
     generateTests l
     generateBuild l
+
+generatePublishing :: EdenGenerate ()
+generatePublishing = do
+    dir <- publishDir
+    liftIO $ createDirectoryIfMissing True dir
 
 
 
