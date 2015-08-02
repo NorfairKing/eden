@@ -29,7 +29,7 @@ printIf bool str = do
 make :: FilePath     -- Make directory
      -> FilePath     -- Make file
      -> Maybe String -- Make rule
-     -> EdenBuild ()
+     -> Eden c ()
 make dir makefile mrule = do
     let rulestr = case mrule of
                     Nothing -> ""
