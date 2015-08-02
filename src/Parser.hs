@@ -134,7 +134,7 @@ parseTest = info parser modifier
   where
     parser = Test <$> parseTestOptions
     modifier = fullDesc
-            <> progDesc "Test a test target (all, entire library, single solution)"
+            <> progDesc "Test a test target"
 
 parseTestOptions :: Parser TestOptions
 parseTestOptions = TestOptions <$> parseTestTarget
@@ -143,7 +143,9 @@ parseTestTarget :: Parser TestTarget
 parseTestTarget = hsubparser $ mconcat
     [
         command "all"       $ info parseAllTestTarget idm
+    ,   command "libraries" $ info parseAllLibrariesTestTarget idm
     ,   command "library"   $ info parseLibraryTestTarget idm
+    ,   command "problems"  $ info parseAllProblemsTestTarget idm
     ,   command "problem"   $ info parseProblemTestTarget idm
     ,   command "solution"  $ info parseSolutionTestTarget idm
     ]
@@ -151,10 +153,16 @@ parseTestTarget = hsubparser $ mconcat
 parseAllTestTarget :: Parser TestTarget
 parseAllTestTarget = pure TestTargetAll
 
+parseAllLibrariesTestTarget :: Parser TestTarget
+parseAllLibrariesTestTarget = pure TestTargetAllLibraries
+
 parseLibraryTestTarget :: Parser TestTarget
 parseLibraryTestTarget = TestTargetLibrary
     <$> argument str (help "the library to test"
                     <> metavar "LANGUAGE")
+
+parseAllProblemsTestTarget :: Parser TestTarget
+parseAllProblemsTestTarget = pure TestTargetAllProblems
 
 parseProblemTestTarget :: Parser TestTarget
 parseProblemTestTarget = TestTargetProblem
