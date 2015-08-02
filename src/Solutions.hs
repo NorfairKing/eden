@@ -20,17 +20,16 @@ problemDir p = do
     return $ root </> dirName
 
 problemDirName :: Problem -> FilePath
-problemDirName = pad
+problemDirName = padN 3
 
-solutions :: Problem -> Eden c [FilePath]
-solutions p = do
-    dir <- problemDir p
-    cts <- liftIO $ getDirectoryContents dir
-    return $ filter realDir cts
+problems :: Eden c [Problem]
+problems = do
+    root <- edenRoot
+    cts <- liftIO $ getDirectoryContents root
+    return $ map read $ filter isProblemDir cts
   where
-    realDir d | d == "."  = False
-              | d == ".." = False
-              | otherwise = True
+    isProblemDir d = elem d $ map problemDirName nums
+    nums = [1..999]
 
 
 --[ Solutions ]--
@@ -40,6 +39,11 @@ solutionDir p l = do
     probDir <- problemDir p
     return $ probDir </> l
 
+solutions :: Problem -> Eden c [FilePath]
+solutions p = do
+    dir <- problemDir p
+    cts <- liftIO $ getDirectoryContents dir
+    return $ filter realDir cts
 
 --[ Libraries ]--
 
@@ -57,6 +61,12 @@ libMakefilePath :: Language -> Eden c FilePath
 libMakefilePath l = do
     dir <- libraryDir l
     return $ dir </> defaultMakefileName
+
+libraries :: Eden c [Language]
+libraries = do
+    dir <- libDir
+    cts <- liftIO $ getDirectoryContents dir
+    return $ filter realDir cts
 
 --[ Tests ]--
 
@@ -103,10 +113,12 @@ defaultInputFilePath p = do
 
 --[ Utils ]--
 
-pad :: Int -> String
-pad = padN paddingLength
-
 padN :: Int -> Int -> String
 padN m n = replicate (m - len) '0' ++ show n
   where len = length $ show n
 
+
+
+realDir d | d == "."  = False
+          | d == ".." = False
+          | otherwise = True

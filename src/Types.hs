@@ -63,7 +63,9 @@ data TestOptions = TestOptions {
     } deriving Show
 
 data TestTarget = TestTargetAll
+                | TestTargetAllLibraries
                 | TestTargetLibrary Language
+                | TestTargetAllProblems
                 | TestTargetProblem Problem
                 | TestTargetSolution Problem Language
     deriving Show

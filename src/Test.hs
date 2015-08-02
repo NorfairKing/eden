@@ -18,12 +18,21 @@ test = do
 
 testTarget :: TestTarget -> EdenTest ()
 testTarget TestTargetAll = testAll
+testTarget TestTargetAllLibraries = testLibraries
 testTarget (TestTargetLibrary l) = testLibrary l
+testTarget TestTargetAllProblems = testProblems
 testTarget (TestTargetProblem p) = testProblem p
 testTarget (TestTargetSolution p l) = testSolution p l
 
 testAll :: EdenTest ()
-testAll = undefined
+testAll = do
+    testLibraries
+    testProblems
+
+testLibraries :: EdenTest ()
+testLibraries = do
+    allLibraries <- libraries
+    mapM_ testLibrary allLibraries
 
 testLibrary :: Language -> EdenTest ()
 testLibrary l = do
@@ -34,6 +43,11 @@ testLibrary l = do
     let rule = Just defaultTestRuleName
 
     make md mf rule
+
+testProblems :: EdenTest ()
+testProblems = do
+    allProblems <- problems
+    mapM_ testProblem allProblems
 
 testProblem :: Problem -> EdenTest ()
 testProblem p = do
