@@ -2,9 +2,9 @@ module Init where
 
 
 import           Data.Version          (showVersion)
+import           Paths_eden            (version)
 import           System.Directory      (createDirectoryIfMissing,
                                         getCurrentDirectory)
-import           Paths_eden            (version)
 import           System.FilePath.Posix ((</>))
 import           System.IO             (Handle,
                                         IOMode(WriteMode),
@@ -12,6 +12,7 @@ import           System.IO             (Handle,
                                         withFile)
 
 import           Constants
+import           Paths
 import           Types
 
 initE :: EdenInit ()
@@ -21,10 +22,8 @@ initE = do
 createEdenRoot :: EdenInit ()
 createEdenRoot = do
     current <- liftIO getCurrentDirectory
-    let edenRoot = current </> edenRootName
-    liftIO $ createDirectoryIfMissing True edenRoot
-    let versionFile = edenRoot </> versionFileName
-    liftIO $ withFile versionFile WriteMode createVersionFile
+    liftIO $ createDirectoryIfMissing True (dotEdenPath current)
+    liftIO $ withFile (versionPath current) WriteMode createVersionFile
 
 createVersionFile :: Handle -> IO ()
 createVersionFile handle = hPutStrLn handle (showVersion version)
