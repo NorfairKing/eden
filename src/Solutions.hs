@@ -74,6 +74,13 @@ makefilePath l = do
     return $ dir </> defaultMakefileName
 
 
+--[ Run ]--
+
+defaultInputFilePath :: Problem -> Eden c FilePath
+defaultInputFilePath p = do
+    dir <- problemDir p
+    return $ dir </> defaultInputFileName
+
 
 --[ Utils ]--
 

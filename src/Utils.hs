@@ -1,6 +1,7 @@
 module Utils where
 
 import           System.Process (readProcess, system)
+import           Types
 
 
 runCommand :: String -> IO String
@@ -10,8 +11,16 @@ runCommand str = readProcess bin args ""
 runSilent :: String -> IO ()
 runSilent cmd = undefined cmd
 
-runRaw :: String -> IO ()
+runRaw :: String -> Eden c ()
 runRaw cmd = do
-    _ <- system cmd
+    printIf (askGlobal opt_commands) cmd
+
+    _ <- liftIO $ system cmd
     return ()
 
+printIf :: Eden c Bool -> String -> Eden c ()
+printIf bool str = do
+    b <- bool
+    if b
+    then liftIO $ putStrLn str
+    else return ()

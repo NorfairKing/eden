@@ -23,3 +23,6 @@ defaultMakefileName = "makefile"
 
 defaultExecutable :: String
 defaultExecutable = "solution.bin"
+
+defaultInputFileName :: String
+defaultInputFileName = "input.txt"

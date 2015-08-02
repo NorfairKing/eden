@@ -37,5 +37,5 @@ make dir makefile mrule = do
             ,   "--file"        , makefile
             ,   rulestr
             ]
-    liftIO $ runRaw cmd
+    runRaw cmd
 

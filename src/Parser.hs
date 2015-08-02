@@ -18,7 +18,9 @@ parseOptions = Options
 
 parseGlobalOptions :: Parser GlobalOptions
 parseGlobalOptions = GlobalOptions
-    <$> switch (long "debug" <> help "give debug output")
+    <$> switch
+        (long "commands"
+        <> help "print every executed command")
 
 
 parseCommand :: Parser Command
@@ -28,7 +30,7 @@ parseCommand = hsubparser $ mconcat
     , command "generate" parseGenerate
     , command "build"    parseBuild
     , command "test"     (info parseTest idm)
-    , command "run"      (info parseRun idm)
+    , command "run"      parseRun
     , command "publish"  (info parsePublish idm)
     ]
 
@@ -130,8 +132,30 @@ parseBuildTarget = BuildTarget
 parseTest :: Parser Command
 parseTest = pure $ Test TestOptions
 
-parseRun :: Parser Command
-parseRun = pure $ Run RunOptions
+parseRun :: ParserInfo Command
+parseRun = info parser modifier
+  where
+    parser = Run <$> parseRunOptions
+    modifier = fullDesc
+            <> progDesc "Run a solution."
+
+parseRunOptions :: Parser RunOptions
+parseRunOptions = RunOptions <$> parseRunTarget
+
+parseRunTarget :: Parser RunTarget
+parseRunTarget = RunTarget
+    <$> argument    auto
+        (help "the number of the problem for which to run the solution"
+        <> metavar "PROBLEM")
+    <*> argument    str
+        (help "the language of the problem for which to run the solution"
+        <> metavar "LANGUAGE")
+    <*> option      (Just <$> str)
+        (help "the input file to be used in the solution"
+        <> long "input"
+        <> short 'i'
+        <> value Nothing
+        <> metavar "INPUT_FILE")
 
 parsePublish :: Parser Command
 parsePublish = pure $ Publish PublishOptions

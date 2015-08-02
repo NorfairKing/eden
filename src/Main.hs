@@ -4,6 +4,7 @@ import           Build
 import           Generate
 import           Init
 import           Parser
+import           Run
 import           Types
 
 
@@ -27,9 +28,6 @@ main = do
 
 test :: EdenTest ()
 test = return ()
-
-run :: EdenRun ()
-run = return ()
 
 publish :: EdenPublish ()
 publish = return ()

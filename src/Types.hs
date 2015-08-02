@@ -7,7 +7,7 @@ module Types
     ) where
 
 import           Control.Monad.Except   (ExceptT, runExceptT, throwError)
-import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (ReaderT, ask, asks, runReaderT)
 
 
@@ -20,7 +20,7 @@ data Options = Options {
     } deriving Show
 
 data GlobalOptions = GlobalOptions {
-        opt_quiet :: Bool
+        opt_commands :: Bool
     } deriving Show
 
 data Command = Init InitOptions
@@ -49,22 +49,27 @@ data GenerationTarget = Problem Problem
 
 data BuildOptions = BuildOptions {
         build_target :: BuildTarget
-    }
-  deriving Show
+    } deriving Show
 
 data BuildTarget = BuildTarget {
         target_problem  :: Problem
     ,   target_language :: Language
     ,   target_makefile :: Maybe FilePath
     ,   target_makerule :: Maybe String
-    }
-  deriving Show
+    } deriving Show
 
 data TestOptions = TestOptions
   deriving Show
 
-data RunOptions = RunOptions
-  deriving Show
+data RunOptions = RunOptions {
+        run_target :: RunTarget
+    } deriving Show
+
+data RunTarget = RunTarget {
+        run_target_problem  :: Problem
+    ,   run_target_language :: Language
+    ,   run_target_input    :: Maybe FilePath
+    } deriving Show
 
 data PublishOptions = PublishOptions
   deriving Show
@@ -90,6 +95,11 @@ runEden func opts = runReaderT (runExceptT func) opts
 askEden :: (c -> a) -> Eden c a
 askEden func = do
     (_, o) <- ask
+    return $ func o
+
+askGlobal :: (GlobalOptions -> a) -> Eden c a
+askGlobal func = do
+    (o, _) <- ask
     return $ func o
 
 
