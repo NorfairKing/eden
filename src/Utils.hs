@@ -1,7 +1,7 @@
 module Utils where
 
-import           System.Process (readProcess, system)
 import           Eden
+import           System.Process (readProcess, system)
 import           Types
 
 

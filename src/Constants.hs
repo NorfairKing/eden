@@ -44,3 +44,6 @@ defaultExplanationName = "explanation.tex"
 
 publishImportsFileName :: String
 publishImportsFileName = "explanations.tex"
+
+mainWriteupFile :: String
+mainWriteupFile = "main.tex"

@@ -1,3 +1,4 @@
+{-# LANGUAGE QuasiQuotes #-}
 module Generate where
 
 import           System.Directory          (createDirectoryIfMissing)
