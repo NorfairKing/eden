@@ -6,6 +6,9 @@ edenName = "eden"
 edenRootName :: String
 edenRootName = '.' : edenName
 
+versionFileName :: String
+versionFileName = "VERSION"
+
 paddingLength :: Int
 paddingLength = 3
 
