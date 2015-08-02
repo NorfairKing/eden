@@ -2,14 +2,13 @@ module Generate where
 
 import           System.Directory (createDirectoryIfMissing)
 
+import           Eden
 import           Paths
 import           Solutions
 import           Types
 
 generate :: EdenGenerate ()
 generate = do
-    checkEden
-
     target <- askEden generate_target
     case target of
         Problem p       -> generateProblem p
@@ -55,6 +54,3 @@ generateEnvironment l = do
     generateLibrary l
     generateTests l
     generateBuild l
-
-
-

@@ -6,9 +6,9 @@ module Types
     , module Control.Monad.Reader
     ) where
 
-import           Control.Monad.Except   (ExceptT, runExceptT, throwError)
+import           Control.Monad.Except   (ExceptT, throwError)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Control.Monad.Reader   (ReaderT, ask, asks, runReaderT)
+import           Control.Monad.Reader   (ReaderT)
 
 
 
@@ -98,19 +98,6 @@ type EdenBuild      = Eden BuildOptions
 type EdenTest       = Eden TestOptions
 type EdenRun        = Eden RunOptions
 type EdenPublish    = Eden PublishOptions
-
-runEden :: Eden c a -> (GlobalOptions, c) -> IO (Either EdenError a)
-runEden func opts = runReaderT (runExceptT func) opts
-
-askEden :: (c -> a) -> Eden c a
-askEden func = do
-    (_, o) <- ask
-    return $ func o
-
-askGlobal :: (GlobalOptions -> a) -> Eden c a
-askGlobal func = do
-    (o, _) <- ask
-    return $ func o
 
 
 --[ Euler Problems ]--

@@ -1,6 +1,7 @@
 module Main where
 
 import           Build
+import           Eden
 import           Generate
 import           Init
 import           Parser
@@ -17,12 +18,12 @@ main = do
         c = opt_command options
 
     ee <- case c of
-        Init o      -> runEden initE       (g, o)
-        Generate o  -> runEden generate    (g, o)
-        Build o     -> runEden build       (g, o)
-        Test o      -> runEden test        (g, o)
-        Run o       -> runEden run         (g, o)
-        Publish o   -> runEden publish     (g, o)
+        Init o      -> runEden        initE       (g, o)
+        Generate o  -> runCheckedEden generate    (g, o)
+        Build o     -> runCheckedEden build       (g, o)
+        Test o      -> runCheckedEden test        (g, o)
+        Run o       -> runCheckedEden run         (g, o)
+        Publish o   -> runCheckedEden publish     (g, o)
     case ee of
         Left error  -> putStrLn error
         Right ()    -> return ()

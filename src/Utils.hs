@@ -1,6 +1,7 @@
 module Utils where
 
 import           System.Process (readProcess, system)
+import           Eden
 import           Types
 
 
@@ -42,4 +43,3 @@ make dir makefile mrule = do
             ,   rulestr
             ]
     runRaw cmd
-
