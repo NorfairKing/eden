@@ -82,9 +82,13 @@ data RunTarget = RunTarget {
     ,   run_target_input    :: Maybe FilePath
     } deriving Show
 
-data PublishOptions = PublishOptions
-  deriving Show
+data PublishOptions = PublishOptions {
+        publish_target :: PublishTarget
+    } deriving Show
 
+data PublishTarget = PublishAll
+                   | PublishProblem Problem
+    deriving Show
 
 
 --[ Monads ]--

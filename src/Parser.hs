@@ -207,6 +207,25 @@ parseRunTarget = RunTarget
 parsePublish :: ParserInfo Command
 parsePublish = info parser modifier
   where
-    parser = pure $ Publish PublishOptions
+    parser = Publish <$> parsePublishOptions
     modifier = fullDesc
             <> progDesc "Publish writeups."
+
+parsePublishOptions :: Parser PublishOptions
+parsePublishOptions = PublishOptions <$> parsePublishTarget
+
+parsePublishTarget :: Parser PublishTarget
+parsePublishTarget = hsubparser $ mconcat
+    [
+        command "all"       (info parsePublishAllTarget idm)
+    ,   command "problem"   (info parsePublishProblemTarget idm)
+    ]
+
+parsePublishAllTarget :: Parser PublishTarget
+parsePublishAllTarget = pure PublishAll
+
+parsePublishProblemTarget :: Parser PublishTarget
+parsePublishProblemTarget = PublishProblem
+    <$> argument auto
+        (help "the number of the problem for which to publish the explanation"
+        <> metavar "PROBLEM")

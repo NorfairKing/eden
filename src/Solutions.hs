@@ -120,6 +120,11 @@ publishDir = do
     root <- edenRoot
     return $ root </> publishingDirName
 
+explanationPath :: Problem -> Eden c FilePath
+explanationPath p = do
+    probDir <- problemDir p
+    return $ probDir </> defaultExplanationName
+
 explanations :: Eden c [Problem]
 explanations = do
     pbs <- problems

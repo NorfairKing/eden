@@ -4,6 +4,7 @@ import           System.Directory      (setCurrentDirectory)
 import           System.FilePath.Posix ((</>))
 
 import           Constants
+import           Eden
 import           Paths
 import           Solutions
 import           Types
@@ -11,10 +12,13 @@ import           Utils
 
 publish :: EdenPublish ()
 publish = do
-    checkEden
+    target <- askEden publish_target
 
-    generateExplanationImports
-    buildWriteups
+    case target of
+        PublishProblem p -> buildWriteupForProblem p
+        PublishAll -> do
+            generateExplanationImports
+            buildWriteups
 
 generateExplanationImports :: EdenPublish ()
 generateExplanationImports = do
@@ -27,17 +31,23 @@ generateExplanationImports = do
     makeImport p = "\\subfile{../" ++ problemDirName p </> defaultExplanationName ++ "}"
 
 buildWriteups :: EdenPublish ()
-buildWriteups = do
+buildWriteups = buildLatex $ mainWriteupFile
+
+buildWriteupForProblem :: Problem -> EdenPublish ()
+buildWriteupForProblem p = do
+    path <- explanationPath p
+    buildLatex path
+
+
+buildLatex :: FilePath -> EdenPublish ()
+buildLatex fp = do
     dir <- publishDir
     liftIO $ setCurrentDirectory dir
-    let cmd = unwords $ [
-                "latexmk"
-            ,   "-pdf"
-            ,   "-pdflatex=\"pdflatex -shell-escape -halt-on-error -enable-pipes -enable-write18\""
-            ,   mainWriteupFile
-            ]
-    runRaw cmd
-
-
+    runRaw $ unwords $ [
+                  "latexmk"
+                , "-pdf"
+                , "-pdflatex=\"pdflatex -shell-escape -halt-on-error -enable-pipes -enable-write18\""
+                , fp
+                ]
 
 
