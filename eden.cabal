@@ -1,6 +1,6 @@
 name:                eden
 version:             0.1.0.0
-licence:             GPL
+license:             GPL
 license-file:        LICENSE
 author:              Tom Sydney Kerckhove
 maintainer:          syd.kerckhove@gmail.com
