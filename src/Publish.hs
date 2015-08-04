@@ -1,5 +1,6 @@
 module Publish where
 
+import           Data.List
 import           System.Directory      (setCurrentDirectory)
 import           System.FilePath.Posix ((</>))
 
@@ -23,7 +24,7 @@ publish = do
 generateExplanationImports :: EdenPublish ()
 generateExplanationImports = do
     exp <- explanations
-    let str = unlines $ map makeImport exp
+    let str = unlines . sort $ map makeImport exp
     dir <- publishDir
     liftIO $ writeFile (dir </> publishImportsFileName) str
   where
