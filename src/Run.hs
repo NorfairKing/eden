@@ -45,4 +45,5 @@ runSolution file minput = do
                 file
             ,   instr
             ]
-    runRaw cmd
+    result <- runCommand cmd
+    liftIO $ putStr result
