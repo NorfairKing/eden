@@ -22,6 +22,7 @@ executable eden
                      , process              >= 1.2  && < 1.3
                      , heredoc              >= 0.2  && < 0.3
                      , template-haskell     >= 2.10 && < 2.11
+                     , timeit               >= 1.0  && < 1.1
 
 test-suite eden-tests
   type:                exitcode-stdio-1.0

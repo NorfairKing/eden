@@ -1,5 +1,7 @@
 module Utils where
 
+import           System.TimeIt  (timeItT)
+
 import           System.Exit    (ExitCode (..))
 import           System.IO      (hGetContents)
 import           System.Process (createProcess, readProcess,

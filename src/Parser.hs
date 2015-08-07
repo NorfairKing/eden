@@ -1,5 +1,6 @@
 module Parser where
 
+import           Constants
 import           Types
 
 import           Options.Applicative
@@ -203,6 +204,12 @@ parseRunTarget = RunTarget
         <> short 'i'
         <> value Nothing
         <> metavar "INPUT_FILE")
+    <*> option      str
+        (help "the binary to run"
+        <> long "binary"
+        <> short 'b'
+        <> value defaultExecutable
+        <> metavar "BINARY")
 
 parsePublish :: ParserInfo Command
 parsePublish = info parser modifier

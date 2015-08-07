@@ -80,6 +80,7 @@ data RunTarget = RunTarget {
         run_target_problem  :: Problem
     ,   run_target_language :: Language
     ,   run_target_input    :: Maybe FilePath
+    ,   run_target_binary   :: String
     } deriving Show
 
 data PublishOptions = PublishOptions {
