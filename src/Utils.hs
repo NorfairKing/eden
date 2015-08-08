@@ -1,12 +1,12 @@
 module Utils where
 
-import           System.TimeIt  (timeItT)
-
-import           System.Exit    (ExitCode (..))
-import           System.IO      (hGetContents)
-import           System.Process (createProcess, readProcess,
-                                 runInteractiveCommand, shell, system,
-                                 waitForProcess)
+import           System.Directory (doesDirectoryExist, doesFileExist)
+import           System.Exit      (ExitCode (..))
+import           System.IO        (hGetContents)
+import           System.Process   (createProcess, readProcess,
+                                   runInteractiveCommand, shell, system,
+                                   waitForProcess)
+import           System.TimeIt    (timeItT)
 
 import           Eden
 import           Types
@@ -46,14 +46,24 @@ make :: FilePath     -- Make directory
      -> Maybe String -- Make rule
      -> Eden c ()
 make dir makefile mrule = do
-    let rulestr = case mrule of
-                    Nothing -> ""
-                    Just rule -> rule
-    let cmd = unwords $
-            [
-                "make"
-            ,   "--directory"   , dir
-            ,   "--file"        , makefile
-            ,   rulestr
-            ]
-    runRaw cmd
+
+    dirExists   <- liftIO $ doesDirectoryExist dir
+    fileExists <- liftIO $ doesFileExist makefile
+
+    if not dirExists
+    then throwError $ unwords ["Directory", dir, "does not exist."]
+    else do
+        if not fileExists
+        then throwError $ unwords ["Makefile", makefile, "does not exist."]
+        else do
+            let rulestr = case mrule of
+                        Nothing -> ""
+                        Just rule -> rule
+            let cmd = unwords $
+                    [
+                        "make"
+                    ,   "--directory"   , dir
+                    ,   "--file"        , makefile
+                    ,   rulestr
+                    ]
+            runRaw cmd

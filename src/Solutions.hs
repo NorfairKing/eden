@@ -1,7 +1,7 @@
 module Solutions where
 
 import           System.Directory      (doesFileExist, getDirectoryContents)
-import           System.FilePath.Posix ((</>))
+import           System.FilePath.Posix (hasExtension, (</>))
 
 import           Control.Monad         (filterM)
 
@@ -140,6 +140,7 @@ padN m n = replicate (m - len) '0' ++ show n
 
 
 
-realDir d | d == "."  = False
-          | d == ".." = False
-          | otherwise = True
+realDir d | d == "."            = False
+          | d == ".."           = False
+          | hasExtension d      = False
+          | otherwise           = True
