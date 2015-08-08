@@ -57,7 +57,21 @@ Now we can start solving the first problem:
 pe $ cat > 001/c/solution.c
 #include <stdio.h>
 int main () {
-    printf("No solutions will be spoiled");
+    printf("No solutions will be spoiled.\n");
 }
 ```
+
+EDEN makes it very easy to compile your solution.
+From any directory in your EDEN repository, you can build any solution:
+
+```
+pe $ eden build 1 c
+```
+
+Running a solution is also easy:
+
+```
+pe $ eden run 1 c
+```
+
 

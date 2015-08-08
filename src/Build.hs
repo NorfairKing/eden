@@ -1,5 +1,7 @@
 module Build where
 
+import           System.Directory (doesDirectoryExist, doesFileExist)
+
 import           Eden
 import           Paths
 import           Solutions
@@ -17,7 +19,14 @@ buildLib :: Language -> Eden c ()
 buildLib l = do
     md <- libraryDir l
     mf <- libMakefilePath l
-    make md mf Nothing
+
+    libdirExists   <- liftIO $ doesDirectoryExist md
+    makefileExists <- liftIO $ doesFileExist mf
+
+    if libdirExists && makefileExists
+    then make md mf Nothing
+    else return ()
+
 
 buildTarget :: BuildTarget -> Eden c ()
 buildTarget bt = do
