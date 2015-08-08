@@ -8,10 +8,6 @@ import           Control.Monad         (filterM)
 import           Constants
 import           Paths
 import           Types
---[ Language ]--
-
-
-
 
 --[ Problems ]--
 

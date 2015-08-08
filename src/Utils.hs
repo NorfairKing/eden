@@ -1,23 +1,37 @@
 module Utils where
 
+import           System.TimeIt  (timeItT)
+
+import           System.Exit    (ExitCode (..))
+import           System.IO      (hGetContents)
+import           System.Process (createProcess, readProcess,
+                                 runInteractiveCommand, shell, system,
+                                 waitForProcess)
+
 import           Eden
-import           System.Process (readProcess, system)
 import           Types
 
 
-runCommand :: String -> IO String
-runCommand str = readProcess bin args ""
+runCommand :: String -> Eden c String
+runCommand str = liftIO $ readProcess bin args ""
   where (bin:args) = words str
-
-runSilent :: String -> IO ()
-runSilent cmd = undefined cmd
 
 runRaw :: String -> Eden c ()
 runRaw cmd = do
     printIf (askGlobal opt_commands) cmd
-
-    _ <- liftIO $ system cmd
-    return ()
+    (inh, outh, errh, ph) <- liftIO $ runInteractiveCommand cmd
+    ec <- liftIO $ waitForProcess ph
+    case ec of
+        ExitSuccess -> return ()
+        ExitFailure code -> do
+            out   <- liftIO $ hGetContents outh
+            err   <- liftIO $ hGetContents errh
+            throwError $ unlines $
+                [
+                    unwords ["Command", show cmd, "exited with code", show code]
+                ,   out
+                ,   err
+                ]
 
 printIf :: Eden c Bool -> String -> Eden c ()
 printIf bool str = do

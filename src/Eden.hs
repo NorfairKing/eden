@@ -1,7 +1,7 @@
 module Eden where
 
-import           Control.Monad.Except   (ExceptT, runExceptT, throwError)
-import           Control.Monad.Reader   (ReaderT, ask, asks, runReaderT)
+import           Control.Monad.Except (ExceptT, runExceptT, throwError)
+import           Control.Monad.Reader (ReaderT, ask, asks, runReaderT)
 
 import           Paths
 import           Types

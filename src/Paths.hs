@@ -6,8 +6,7 @@ import           Paths_eden            (version)
 import           System.Directory      (getCurrentDirectory,
                                         getDirectoryContents)
 import           System.Environment    (setEnv)
-import           System.FilePath.Posix ((</>),
-                                        takeDirectory)
+import           System.FilePath.Posix (takeDirectory, (</>))
 
 import           Data.Maybe            (isJust)
 

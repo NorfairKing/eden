@@ -3,10 +3,12 @@ module Generate where
 
 import           System.Directory          (createDirectoryIfMissing)
 import           System.FilePath.Posix     ((</>))
+import           System.IO                 (hFlush, stdout)
 import           Text.Heredoc
 
 import           Language.Haskell.TH.Quote
 
+import           Constants
 import           Eden
 import           Paths
 import           Solutions
@@ -24,6 +26,7 @@ generate = do
         BuildDir l      -> generateBuild l
         Environment l   -> generateEnvironment l
         Publishing      -> generatePublishing
+        GettingStarted  -> generateGettingStarted
 
 
 generateProblem :: Problem -> EdenGenerate ()
@@ -54,7 +57,22 @@ generateBuild :: Language -> EdenGenerate ()
 generateBuild l = do
     dir <- buildFilesDir l
     liftIO $ createDirectoryIfMissing True dir
+    case starterMakefile l of
+        Nothing -> return ()
+        Just ss -> liftIO $ writeFile (dir </> defaultMakefileName) ss
 
+cMakefile :: String
+cMakefile = [litFile|starter-makefiles/c|]
+
+haskellMakefile :: String
+haskellMakefile = [litFile|starter-makefiles/haskell|]
+
+starterMakefile :: Language -> Maybe String
+starterMakefile lang = lookup lang $
+    [
+        ("c", cMakefile)
+    ,   ("haskell", haskellMakefile)
+    ]
 
 generateEnvironment :: Language -> EdenGenerate ()
 generateEnvironment l = do
@@ -71,7 +89,19 @@ generatePublishing = do
 generateStarterPublishingFiles :: EdenGenerate ()
 generateStarterPublishingFiles = do
     dir <- publishDir
-    liftIO $ writeFile starterMainTex $ dir </> "main.tex"
+    liftIO $ writeFile (dir </> "main.tex") starterMainTex
 
 starterMainTex :: String
 starterMainTex = [litFile|tex/main.tex|]
+
+generateGettingStarted :: EdenGenerate ()
+generateGettingStarted = do
+    liftIO $ do
+        putStrLn "What language would you like to use to solve the problems?"
+        putStrLn "You can use more than one language later, but what will you start with?"
+        putStrLn "Please use only lower case letters and no spaces."
+        putStr "Language > "
+        hFlush stdout
+    lang <- liftIO $ getLine
+    generateSolution 1 lang
+    generateEnvironment lang

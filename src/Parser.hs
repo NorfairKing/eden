@@ -1,8 +1,10 @@
 module Parser where
 
+import           Options.Applicative
+
+import           Constants
 import           Types
 
-import           Options.Applicative
 
 getOptions :: IO Options
 getOptions = execParser opts
@@ -56,13 +58,14 @@ parseGenerateOptions = GenerateOptions <$> parseGenerationTarget
 parseGenerationTarget :: Parser GenerationTarget
 parseGenerationTarget = hsubparser $ mconcat
     [
-      command "problem"     (info parseProblemTarget idm)
-    , command "solution"    (info parseSolutionTarget idm)
-    , command "library"     (info parseLibraryTarget idm)
-    , command "tests"       (info parseTestsTarget idm)
-    , command "build"       (info parseBuildDirTarget idm)
-    , command "environment" (info parseEnvironmentTarget idm)
-    , command "writeups"    (info parsePublishingTarget idm)
+      command "problem"         (info parseProblemTarget idm)
+    , command "solution"        (info parseSolutionTarget idm)
+    , command "library"         (info parseLibraryTarget idm)
+    , command "tests"           (info parseTestsTarget idm)
+    , command "build"           (info parseBuildDirTarget idm)
+    , command "environment"     (info parseEnvironmentTarget idm)
+    , command "writeups"        (info parsePublishingTarget idm)
+    , command "getting-started" (info parseGettingStartedTarget idm)
     ]
 
 parseProblemTarget :: Parser GenerationTarget
@@ -99,6 +102,9 @@ parseEnvironmentTarget = Environment
 
 parsePublishingTarget :: Parser GenerationTarget
 parsePublishingTarget = pure Publishing
+
+parseGettingStartedTarget :: Parser GenerationTarget
+parseGettingStartedTarget = pure GettingStarted
 
 
 parseBuild :: ParserInfo Command
@@ -203,6 +209,12 @@ parseRunTarget = RunTarget
         <> short 'i'
         <> value Nothing
         <> metavar "INPUT_FILE")
+    <*> option      str
+        (help "the binary to run"
+        <> long "binary"
+        <> short 'b'
+        <> value defaultExecutable
+        <> metavar "BINARY")
 
 parsePublish :: ParserInfo Command
 parsePublish = info parser modifier

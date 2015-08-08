@@ -1,5 +1,7 @@
 module Run where
 
+import           Text.Printf           (printf)
+
 import           System.Directory      (doesFileExist)
 import           System.FilePath.Posix ((</>))
 
@@ -18,7 +20,7 @@ run = do
 runTarget :: RunTarget -> EdenRun ()
 runTarget rt = do
     md <- solutionDir (run_target_problem rt) (run_target_language rt)
-    let exec = md </> defaultExecutable
+    let exec = md </> run_target_binary rt
 
     mInputPath <- case run_target_input rt of
                     Just rti -> return $ Just rti
@@ -45,4 +47,5 @@ runSolution file minput = do
                 file
             ,   instr
             ]
-    runRaw cmd
+    result <- runCommand cmd
+    liftIO $ putStr result
