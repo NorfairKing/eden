@@ -3,6 +3,7 @@ module Generate where
 
 import           System.Directory          (createDirectoryIfMissing)
 import           System.FilePath.Posix     ((</>))
+import           System.IO                 (hFlush, stdout)
 import           Text.Heredoc
 
 import           Language.Haskell.TH.Quote
@@ -24,6 +25,7 @@ generate = do
         BuildDir l      -> generateBuild l
         Environment l   -> generateEnvironment l
         Publishing      -> generatePublishing
+        GettingStarted  -> generateGettingStarted
 
 
 generateProblem :: Problem -> EdenGenerate ()
@@ -75,3 +77,15 @@ generateStarterPublishingFiles = do
 
 starterMainTex :: String
 starterMainTex = [litFile|tex/main.tex|]
+
+generateGettingStarted :: EdenGenerate ()
+generateGettingStarted = do
+    liftIO $ do
+        putStrLn "What language would you like to use to solve the problems?"
+        putStrLn "You can use more than one language later, but what will you start with?"
+        putStrLn "Please use only lower case letters and no spaces."
+        putStr "Language > "
+        hFlush stdout
+    lang <- liftIO $ getLine
+    generateSolution 1 lang
+    generateEnvironment lang
