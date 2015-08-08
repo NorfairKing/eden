@@ -72,6 +72,7 @@ Running a solution is also easy:
 
 ```
 pe $ eden run 1 c
+No solutions will be spoiled.
 ```
 
 
