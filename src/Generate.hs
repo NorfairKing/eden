@@ -8,6 +8,7 @@ import           Text.Heredoc
 
 import           Language.Haskell.TH.Quote
 
+import           Constants
 import           Eden
 import           Paths
 import           Solutions
@@ -56,7 +57,22 @@ generateBuild :: Language -> EdenGenerate ()
 generateBuild l = do
     dir <- buildFilesDir l
     liftIO $ createDirectoryIfMissing True dir
+    case starterMakefile l of
+        Nothing -> return ()
+        Just ss -> liftIO $ writeFile (dir </> defaultMakefileName) ss
 
+cMakefile :: String
+cMakefile = [litFile|starter-makefiles/c|]
+
+haskellMakefile :: String
+haskellMakefile = [litFile|starter-makefiles/haskell|]
+
+starterMakefile :: Language -> Maybe String
+starterMakefile lang = lookup lang $
+    [
+        ("c", cMakefile)
+    ,   ("haskell", haskellMakefile)
+    ]
 
 generateEnvironment :: Language -> EdenGenerate ()
 generateEnvironment l = do
@@ -73,7 +89,7 @@ generatePublishing = do
 generateStarterPublishingFiles :: EdenGenerate ()
 generateStarterPublishingFiles = do
     dir <- publishDir
-    liftIO $ writeFile starterMainTex $ dir </> "main.tex"
+    liftIO $ writeFile (dir </> "main.tex") starterMainTex
 
 starterMainTex :: String
 starterMainTex = [litFile|tex/main.tex|]
