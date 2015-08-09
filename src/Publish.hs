@@ -1,9 +1,9 @@
 module Publish where
 
 import           Data.List
-import           System.Directory      (doesFileExist, removeFile,
-                                        setCurrentDirectory)
-import           System.FilePath.Posix (replaceExtension, (</>))
+import           System.Directory      (doesFileExist, getDirectoryContents,
+                                        removeFile, setCurrentDirectory)
+import           System.FilePath.Posix (replaceExtension, takeExtension, (</>))
 
 import           Constants
 import           Eden
@@ -20,6 +20,7 @@ publish = do
         PublishProblem p -> buildWriteupForProblem p
         PublishAll -> do
             generateExplanationImports
+            generateLibraryImports
             buildWriteups
 
 generateExplanationImports :: EdenPublish ()
@@ -31,6 +32,18 @@ generateExplanationImports = do
   where
     makeImport :: Problem -> String
     makeImport p = "\\subfile{../" ++ problemDirName p </> defaultExplanationName ++ "}"
+
+generateLibraryImports :: EdenPublish ()
+generateLibraryImports = do
+    ld <- libDir
+    cts <- liftIO $ getDirectoryContents ld
+    let files = filter (\f -> takeExtension f == ".tex") cts
+    let str = unlines . sort $ map makeImport files
+    dir <- publishDir
+    liftIO $ writeFile (dir </> publishLibraryImportsFileName) str
+  where
+    makeImport :: FilePath -> String
+    makeImport f = "\\subfile{../lib/" ++ f ++"}"
 
 buildWriteups :: EdenPublish ()
 buildWriteups = buildLatex $ mainWriteupFile
