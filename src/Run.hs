@@ -39,13 +39,9 @@ runSolution :: FilePath -- The absolute path to the executable to run
             -> Maybe FilePath -- The absolute path to the input file
             -> EdenRun ()
 runSolution file minput = do
-    let instr = case minput of
-                    Nothing -> ""
-                    Just i  -> unwords ["<", i]
-    let cmd = unwords $
-            [
-                file
-            ,   instr
-            ]
-    result <- runCommand cmd
+    let cmd = file
+    printIf (askGlobal opt_commands) cmd
+    result <- case minput of
+        Nothing  -> runCommand cmd
+        Just inf -> runCommandWithInput cmd inf
     liftIO $ putStr result

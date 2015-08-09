@@ -11,6 +11,12 @@ import           System.TimeIt    (timeItT)
 import           Eden
 import           Types
 
+runCommandWithInput :: String -> FilePath -> Eden c String
+runCommandWithInput str inf = do
+    instr <- liftIO $ readFile inf
+    liftIO $ readProcess bin args instr
+  where (bin:args) = words str
+
 
 runCommand :: String -> Eden c String
 runCommand str = liftIO $ readProcess bin args ""
