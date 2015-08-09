@@ -6,7 +6,7 @@ module Types
     , module Control.Monad.Reader
     ) where
 
-import           Control.Monad.Except   (ExceptT, throwError)
+import           Control.Monad.Except   (ExceptT, catchError, throwError)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (ReaderT)
 

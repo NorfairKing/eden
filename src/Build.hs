@@ -10,7 +10,7 @@ build :: EdenBuild ()
 build = do
     target <- askEden build_target
 
-    buildLib $ build_target_language target
+    buildLib (build_target_language target) `catchError` (\e -> return ())
     buildTarget target
 
 buildLib :: Language -> Eden c ()
