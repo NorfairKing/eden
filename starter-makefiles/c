@@ -1,15 +1,17 @@
 CC = gcc
 LIB_DIR = $(EDEN_ROOT)/lib/c
-LIB_DIR_FLAGS = -L$(LIB_DIR) -I$(LIB_DIR)
 SRCS=$(wildcard $(LIB_DIR)/*.c)
 SOLUTIONS=$(wildcard *.c)
 SOLVERS=$(SOLUTIONS:.c=.bin)
-CC_FLAGS = $(LIB_DIR_FLAGS)
+CC_FLAGS = -L$(LIB_DIR) -I$(LIB_DIR)
 
 all: $(SOLVERS)
 
 %.bin : %.c
 	$(CC) $< $(SRCS) -o $@ $(CC_FLAGS)
+
+test:
+	@echo placeholder
 
 love:
 	@echo not war
