@@ -1,0 +1,14 @@
+SOLUTIONS=$(wildcard *.py)
+SOLVERS=$(SOLUTIONS:.py=.bin)
+
+all: $(SOLVERS)
+
+%.bin: %.py
+	cp $< $@
+	chmod 775 $@
+
+test:
+	@echo placeholder
+
+love:
+	@echo not war

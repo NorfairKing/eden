@@ -67,11 +67,19 @@ cMakefile = [litFile|starter-makefiles/c|]
 haskellMakefile :: String
 haskellMakefile = [litFile|starter-makefiles/haskell|]
 
+pythonMakefile :: String
+pythonMakefile = [litFile|starter-makefiles/python|]
+
+javaMakefile :: String
+javaMakefile = [litFile|starter-makefiles/java|]
+
 starterMakefile :: Language -> Maybe String
 starterMakefile lang = lookup lang $
     [
         ("c", cMakefile)
     ,   ("haskell", haskellMakefile)
+    ,   ("python", pythonMakefile)
+    ,   ("java", javaMakefile)
     ]
 
 generateEnvironment :: Language -> EdenGenerate ()
