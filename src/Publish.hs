@@ -1,8 +1,9 @@
 module Publish where
 
 import           Data.List
-import           System.Directory      (setCurrentDirectory)
-import           System.FilePath.Posix ((</>))
+import           System.Directory      (doesFileExist, removeFile,
+                                        setCurrentDirectory)
+import           System.FilePath.Posix (replaceExtension, (</>))
 
 import           Constants
 import           Eden
@@ -37,9 +38,10 @@ buildWriteups = buildLatex $ mainWriteupFile
 buildWriteupForProblem :: Problem -> EdenPublish ()
 buildWriteupForProblem p = do
     path <- explanationPath p
-    exists <- doesFileExist path
+    let resultpath = replaceExtension path "pdf"
+    exists <- liftIO $ doesFileExist resultpath
     if exists
-    then removeFile path
+    then liftIO $ removeFile resultpath
     else return ()
     buildLatex path
 
