@@ -22,6 +22,7 @@ EDEN will...
 EDEN will make Project Euler more fun.
 
 - [Getting started](doc/getting-started.md)
+- [Usage](doc/usage.md)
 - [Technical details](doc/technical-details.md)
 
 

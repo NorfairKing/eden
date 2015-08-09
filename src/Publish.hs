@@ -37,8 +37,11 @@ buildWriteups = buildLatex $ mainWriteupFile
 buildWriteupForProblem :: Problem -> EdenPublish ()
 buildWriteupForProblem p = do
     path <- explanationPath p
+    exists <- doesFileExist path
+    if exists
+    then removeFile path
+    else return ()
     buildLatex path
-
 
 buildLatex :: FilePath -> EdenPublish ()
 buildLatex fp = do
