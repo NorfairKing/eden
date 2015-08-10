@@ -34,6 +34,7 @@ parseCommand = hsubparser $ mconcat
     , command "test"     parseTest
     , command "run"      parseRun
     , command "publish"  parsePublish
+    , command "stats"    parseStatistics
     ]
 
 
@@ -241,3 +242,13 @@ parsePublishProblemTarget = PublishProblem
     <$> argument auto
         (help "the number of the problem for which to publish the explanation"
         <> metavar "PROBLEM")
+
+parseStatistics :: ParserInfo Command
+parseStatistics = info parser modifier
+  where
+    parser = Statistics <$> parseStatisticsOptions
+    modifier = fullDesc
+            <> progDesc "Get statistics about an eden repository"
+
+parseStatisticsOptions :: Parser StatisticsOptions
+parseStatisticsOptions = pure StatisticsOptions

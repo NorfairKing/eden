@@ -29,6 +29,7 @@ data Command = Init InitOptions
              | Test TestOptions
              | Run RunOptions
              | Publish PublishOptions
+             | Statistics StatisticsOptions
   deriving Show
 
 data InitOptions = InitOptions
@@ -92,6 +93,8 @@ data PublishTarget = PublishAll
                    | PublishProblem Problem
     deriving Show
 
+data StatisticsOptions = StatisticsOptions
+    deriving Show
 
 --[ Monads ]--
 
@@ -105,6 +108,7 @@ type EdenBuild      = Eden BuildOptions
 type EdenTest       = Eden TestOptions
 type EdenRun        = Eden RunOptions
 type EdenPublish    = Eden PublishOptions
+type EdenStatistics = Eden StatisticsOptions
 
 
 --[ Euler Problems ]--
