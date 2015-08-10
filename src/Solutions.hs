@@ -4,6 +4,7 @@ import           System.Directory      (doesFileExist, getDirectoryContents)
 import           System.FilePath.Posix (hasExtension, (</>))
 
 import           Control.Monad         (filterM)
+import           Data.List             (nub)
 
 import           Constants
 import           Paths
@@ -42,6 +43,18 @@ solutions p = do
     dir <- problemDir p
     cts <- liftIO $ getDirectoryContents dir
     return $ filter realDir cts
+
+allSolutions :: Eden c [FilePath]
+allSolutions = do
+    probs <- problems
+    allSols <- mapM solutions probs
+    return $ concat allSols
+
+languages :: Eden c [Language]
+languages = do
+    probs <- problems
+    allSols <- allSolutions
+    return $ nub allSols
 
 --[ Libraries ]--
 

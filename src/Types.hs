@@ -96,6 +96,19 @@ data PublishTarget = PublishAll
 data StatisticsOptions = StatisticsOptions
     deriving Show
 
+data StatGenerator a = StatGenerator {
+        statgen_name :: String
+    ,   statgen_func :: EdenStatistics a
+    }
+
+data StatResult a = StatResult {
+        statres_name   :: String
+    ,   statres_result :: a
+    }
+
+instance Show a => Show (StatResult a) where
+    show sr = statres_name sr ++ ": " ++ show (statres_result sr)
+
 --[ Monads ]--
 
 type Eden c = ExceptT EdenError (ReaderT (GlobalOptions, c) IO)
