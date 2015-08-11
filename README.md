@@ -30,9 +30,11 @@ EDEN will make Project Euler more fun.
 
 Installing `eden` is as easy as running `cabal install`.
 
+
 ### Using EDEN
 
-Both technical documentation and documentation can be found in the `doc` directory.
+Both technical documentation and usage documentation can be found in the `doc` directory.
+
 
 ### People using EDEN
 If you would like to have your name on this list, just send a pull request.
