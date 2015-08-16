@@ -193,8 +193,7 @@ parseProblemTarget = info parser modifier
   where
     parser = TargetProblem
              <$> argument auto (help "the problem to test"
-                    <> metavar "PROBLEM"
-                    <> completer problemCompleter)
+                    <> metavar "PROBLEM")
     modifier = idm
 
 parseSolutionTarget :: ParserInfo Target
@@ -202,8 +201,7 @@ parseSolutionTarget = info parser modifier
   where
     parser = TargetSolution
              <$> argument auto (help "the problem to test"
-                    <> metavar "PROBLEM"
-                    <> completer problemCompleter)
+                    <> metavar "PROBLEM")
              <*> argument str (help "the language of the solution to test"
                     <> metavar "LANGUAGE")
     modifier = idm
@@ -243,17 +241,3 @@ parseStatistics = info parser modifier
 
 parseStatisticsOptions :: Parser StatisticsOptions
 parseStatisticsOptions = pure StatisticsOptions
-
-problemCompleter :: Completer
-problemCompleter = listIOCompleter problemStrs
-  where
-    problemStrs = do
-        (eea, _) <- runEden problemDirs (defaultGlobalOptions, ())
-        case eea of
-            Left err    -> error $ "Something went wrong figuring out which problems you've tried to solve: " ++ err
-            Right probs -> return probs
-
-    problemDirs = do
-        ps <- problems
-        mapM problemDir ps
-
