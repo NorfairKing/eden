@@ -4,7 +4,7 @@ import           System.Directory      (doesFileExist, getDirectoryContents)
 import           System.FilePath.Posix (hasExtension, (</>))
 
 import           Control.Monad         (filterM)
-import           Data.List             (nub)
+import           Data.List             (nub, sort)
 
 import           Constants
 import           Paths
@@ -25,7 +25,7 @@ problems :: Eden c [Problem]
 problems = do
     root <- edenRoot
     cts <- liftIO $ getDirectoryContents root
-    return $ map read $ filter isProblemDir cts
+    return $ sort $ map read $ filter isProblemDir cts
   where
     isProblemDir d = elem d $ map problemDirName nums
     nums = [1..999]
@@ -42,7 +42,7 @@ solutions :: Problem -> Eden c [FilePath]
 solutions p = do
     dir <- problemDir p
     cts <- liftIO $ getDirectoryContents dir
-    return $ filter realDir cts
+    return $ sort $ filter realDir cts
 
 allSolutions :: Eden c [FilePath]
 allSolutions = do
