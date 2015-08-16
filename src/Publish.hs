@@ -3,7 +3,8 @@ module Publish where
 import           Data.List
 import           System.Directory      (doesFileExist, getDirectoryContents,
                                         removeFile, setCurrentDirectory)
-import           System.FilePath.Posix (replaceExtension, takeExtension, (</>))
+import           System.FilePath.Posix (replaceExtension, takeExtension, (<.>),
+                                        (</>))
 
 import           Constants
 import           Solutions
@@ -11,17 +12,23 @@ import           Types
 import           Utils
 
 publish :: PublishTarget -> EdenPublish ()
-publish (PublishProblem p) = buildWriteupForProblem p
-publish (PublishPart fp) = publishPart fp
-publish PublishAll         = do
+publish (PublishProblem p)  = buildWriteupForProblem p
+publish (PublishLibrary fp) = publishLibrary fp
+publish (PublishPart fp)    = publishPart fp
+publish PublishAll          = do
             generateExplanationImports
             generateLibraryImports
             buildWriteups
 
+publishLibrary :: FilePath -> EdenPublish ()
+publishLibrary fp = do
+    ld <- libDir
+    buildLatex $ ld </> fp <.> "tex"
+
 publishPart :: FilePath -> EdenPublish ()
 publishPart fp = do
     pd <- publishDir
-    buildLatex $ pd </> fp
+    buildLatex $ pd </> fp <.> "tex"
 
 generateExplanationImports :: EdenPublish ()
 generateExplanationImports = do
