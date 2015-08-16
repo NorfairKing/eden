@@ -14,7 +14,7 @@ Try out `eden generate -h` to see what can be generated.
 
 ### Build
 EDEN can build executables for your solutions.
-`eden build <problem> <language>` builds the executable.
+`eden build <target>` builds the executable.
 It will show you an error if anything goes wrong.
 Try running `eden build -h` to see what else is possible.
 
@@ -25,7 +25,7 @@ In particular, `eden test solution <problem> <language>` tests a specific soluti
 
 ### Run
 EDEN can also run your programs.
-`eden run <problem> <language>` runs the executable that was built by `eden build <problem> <language>`.
+`eden run <target>` runs the executable that was built by `eden build <problem> <language>`.
 Run `eden run -h` to see the other possibilities.
 
 ### Publish

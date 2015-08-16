@@ -1,7 +1,7 @@
 module Solutions where
 
 import           System.Directory      (doesFileExist, getDirectoryContents)
-import           System.FilePath.Posix (hasExtension, (</>))
+import           System.FilePath.Posix ((</>))
 
 import           Control.Monad         (filterM)
 import           Data.List             (nub, sort)
@@ -9,6 +9,7 @@ import           Data.List             (nub, sort)
 import           Constants
 import           Paths
 import           Types
+import           Utils
 
 --[ Problems ]--
 
@@ -19,7 +20,7 @@ problemDir p = do
     return $ root </> dirName
 
 problemDirName :: Problem -> FilePath
-problemDirName = padN 3
+problemDirName = padNWith 3 '0' . show
 
 problems :: Eden c [Problem]
 problems = do
@@ -142,17 +143,3 @@ explanations = do
     containsExplanation p = do
         probDir <- problemDir p
         liftIO $ doesFileExist $ probDir </> defaultExplanationName
-
-
---[ Utils ]--
-
-padN :: Int -> Int -> String
-padN m n = replicate (m - len) '0' ++ show n
-  where len = length $ show n
-
-
-realDir :: FilePath -> Bool
-realDir d | d == "."            = False
-          | d == ".."           = False
-          | hasExtension d      = False
-          | otherwise           = True

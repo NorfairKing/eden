@@ -9,17 +9,33 @@ import           Types
 import           Utils
 
 run :: Target -> EdenRun ()
-run TargetAll             = notImplementedYet
-run TargetAllLibraries    = notImplementedYet
-run TargetAllProblems     = notImplementedYet
-run (TargetProblem _)     = notImplementedYet
-run (TargetSolution p l)  = do
+run TargetAll             = runAll
+run TargetAllLibraries    = throwError "What did you think this would do? It doesn't make any sense."
+run TargetAllProblems     = runAllProblems
+run (TargetProblem p)     = runProblem p
+run (TargetSolution p l)  = runSolution p l
+
+runAll :: EdenRun ()
+runAll = runAllProblems
+
+runAllProblems :: EdenRun ()
+runAllProblems = do
+    allProblems <- problems
+    mapM_ runProblem allProblems
+
+runProblem :: Problem -> EdenRun ()
+runProblem p = do
+    allSolutions <- solutions p
+    mapM_ (runSolution p) allSolutions
+
+runSolution :: Problem -> Language -> EdenRun ()
+runSolution p l = do
     md <- solutionDir p l
     bin <- askEden run_binary
     inp <- askEden run_input
-    let exec = md </> bin
+    let cmd = md </> bin
 
-    mInputPath <- case inp of
+    minput <- case inp of
                     Just rti -> return $ Just rti
                     Nothing  -> do
                         dif <- defaultInputFilePath p
@@ -28,17 +44,8 @@ run (TargetSolution p l)  = do
                         then return $ Just dif
                         else return $ Nothing
 
-    runSolution exec mInputPath
-
-
-
-runSolution :: FilePath -- The absolute path to the executable to run
-            -> Maybe FilePath -- The absolute path to the input file
-            -> EdenRun ()
-runSolution file minput = do
-    let cmd = file
     printIf (askGlobal opt_commands) cmd
     result <- case minput of
         Nothing  -> runCommand cmd
         Just inf -> runCommandWithInput cmd inf
-    liftIO $ putStr result
+    liftIO $ putStr $ unwords [problemDirName p, padNWith 8 ' ' l ++ ":", result]

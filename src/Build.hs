@@ -31,8 +31,17 @@ buildLibrary :: Language -> EdenBuild ()
 buildLibrary l = do
     md <- libraryDir l
     mf <- libMakefilePath l
-
     make md mf Nothing
+
+buildProblems :: EdenBuild ()
+buildProblems = do
+    allProblems <- problems
+    mapM_ buildProblem allProblems
+
+buildProblem :: Problem -> EdenBuild ()
+buildProblem p = do
+    allSolutions <- solutions p
+    mapM_ (buildSolution p) allSolutions
 
 buildSolution :: Problem -> Language -> EdenBuild ()
 buildSolution p l = do
@@ -45,17 +54,6 @@ buildSolution p l = do
             Nothing -> makefilePath l
             Just f  -> return f
     make md mf bmr
-
-buildProblems :: EdenBuild ()
-buildProblems = do
-    allProblems <- problems
-    mapM_ buildProblem allProblems
-
-buildProblem :: Problem -> EdenBuild ()
-buildProblem p = do
-    allSolutions <- solutions p
-    mapM_ (buildSolution p) allSolutions
-
 
 --[ Building in general ]--
 

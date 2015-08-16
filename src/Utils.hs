@@ -2,10 +2,12 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Utils where
 
-import           System.Exit    (ExitCode (..))
-import           System.IO      (hGetContents)
-import           System.Process (readProcess, runInteractiveCommand,
-                                 waitForProcess)
+import           System.Exit           (ExitCode (..))
+import           System.FilePath.Posix (hasExtension)
+import           System.IO             (hGetContents)
+import           System.Process        (readProcess, runInteractiveCommand,
+                                        waitForProcess)
+
 
 import           Eden
 import           Types
@@ -49,3 +51,12 @@ printIf bool str = do
 notImplementedYet :: (Monad m, MonadError String m) => m ()
 notImplementedYet = throwError "This feature is not implemented yet."
 
+padNWith :: Int -> Char -> String -> String
+padNWith m c s = replicate (m - len) c ++ s
+  where len = length s
+
+realDir :: FilePath -> Bool
+realDir d | d == "."            = False
+          | d == ".."           = False
+          | hasExtension d      = False
+          | otherwise           = True
