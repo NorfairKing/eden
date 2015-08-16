@@ -13,8 +13,7 @@ import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (ReaderT, ask, asks, runReaderT)
 import           Control.Monad.Writer   (WriterT, runWriterT, tell)
 
-
-
+import           Data.List              (nub)
 
 --[ Command line options ]--
 
@@ -113,7 +112,7 @@ data MakeTargets = MakeTargets {
 instance Monoid MakeTargets where
     mempty  = MakeTargets { make_targets = [] }
     mappend mt1 mt2 = MakeTargets {
-            make_targets = make_targets mt1 ++ make_targets mt2
+            make_targets = nub $ make_targets mt1 ++ make_targets mt2
         }
 
 data MakeTarget = MakeTarget {
@@ -121,7 +120,7 @@ data MakeTarget = MakeTarget {
     ,   make_file :: FilePath
     ,   make_rule :: Maybe String
     }
-    deriving Show
+    deriving (Show, Eq)
 
 --[ Monads ]--
 

@@ -28,7 +28,8 @@ makeTargetsFirst mts = do
     liftIO $ runEdenMake (makeTargets mts) o
 
 makeTargets :: MakeTargets -> EdenMake ()
-makeTargets mts = mapM_ doMake $ make_targets mts
+makeTargets mts = do
+    mapM_ doMake $ make_targets mts
 
 doMake :: MakeTarget -> EdenMake ()
 doMake mt = do
