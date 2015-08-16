@@ -219,12 +219,19 @@ parsePublishOptions = pure PublishOptions
 parsePublishTarget :: Parser PublishTarget
 parsePublishTarget = hsubparser $ mconcat
     [
-        command "all"       (info parsePublishAllTarget idm)
-    ,   command "problem"   (info parsePublishProblemTarget idm)
+      command "all"       (info parsePublishAllTarget idm)
+    , command "part"      (info parsePublishPartTarget idm)
+    , command "problem"   (info parsePublishProblemTarget idm)
     ]
 
 parsePublishAllTarget :: Parser PublishTarget
 parsePublishAllTarget = pure PublishAll
+
+parsePublishPartTarget :: Parser PublishTarget
+parsePublishPartTarget = PublishPart
+    <$> argument str
+        (help "the tex file to publish as a part, relative to the writeup directory"
+        <> metavar "FILE")
 
 parsePublishProblemTarget :: Parser PublishTarget
 parsePublishProblemTarget = PublishProblem

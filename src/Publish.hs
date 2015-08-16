@@ -12,10 +12,16 @@ import           Utils
 
 publish :: PublishTarget -> EdenPublish ()
 publish (PublishProblem p) = buildWriteupForProblem p
+publish (PublishPart fp) = publishPart fp
 publish PublishAll         = do
             generateExplanationImports
             generateLibraryImports
             buildWriteups
+
+publishPart :: FilePath -> EdenPublish ()
+publishPart fp = do
+    pd <- publishDir
+    buildLatex $ pd </> fp
 
 generateExplanationImports :: EdenPublish ()
 generateExplanationImports = do

@@ -71,6 +71,7 @@ data PublishOptions = PublishOptions
     deriving Show
 
 data PublishTarget = PublishAll
+                   | PublishPart FilePath
                    | PublishProblem Problem
     deriving Show
 
