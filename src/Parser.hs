@@ -193,8 +193,7 @@ parseProblemTarget = info parser modifier
   where
     parser = TargetProblem
              <$> argument auto (help "the problem to test"
-                    <> metavar "PROBLEM"
-                    <> completer problemCompleter)
+                    <> metavar "PROBLEM")
     modifier = idm
 
 parseSolutionTarget :: ParserInfo Target
@@ -202,8 +201,7 @@ parseSolutionTarget = info parser modifier
   where
     parser = TargetSolution
              <$> argument auto (help "the problem to test"
-                    <> metavar "PROBLEM"
-                    <> completer problemCompleter)
+                    <> metavar "PROBLEM")
              <*> argument str (help "the language of the solution to test"
                     <> metavar "LANGUAGE")
     modifier = idm
@@ -221,12 +219,26 @@ parsePublishOptions = pure PublishOptions
 parsePublishTarget :: Parser PublishTarget
 parsePublishTarget = hsubparser $ mconcat
     [
-        command "all"       (info parsePublishAllTarget idm)
-    ,   command "problem"   (info parsePublishProblemTarget idm)
+      command "all"       (info parsePublishAllTarget idm)
+    , command "library"   (info parsePublishLibraryTarget idm)
+    , command "part"      (info parsePublishPartTarget idm)
+    , command "problem"   (info parsePublishProblemTarget idm)
     ]
 
 parsePublishAllTarget :: Parser PublishTarget
 parsePublishAllTarget = pure PublishAll
+
+parsePublishLibraryTarget :: Parser PublishTarget
+parsePublishLibraryTarget = PublishLibrary
+    <$> argument str
+        (help "the name of the library tex file to publish, relative to the lib directory"
+        <> metavar "FILENAME")
+
+parsePublishPartTarget :: Parser PublishTarget
+parsePublishPartTarget = PublishPart
+    <$> argument str
+        (help "the name of the tex file to publish as a part, relative to the writeup directory"
+        <> metavar "FILENAME")
 
 parsePublishProblemTarget :: Parser PublishTarget
 parsePublishProblemTarget = PublishProblem
@@ -243,17 +255,3 @@ parseStatistics = info parser modifier
 
 parseStatisticsOptions :: Parser StatisticsOptions
 parseStatisticsOptions = pure StatisticsOptions
-
-problemCompleter :: Completer
-problemCompleter = listIOCompleter problemStrs
-  where
-    problemStrs = do
-        (eea, _) <- runEden problemDirs (defaultGlobalOptions, ())
-        case eea of
-            Left err    -> error $ "Something went wrong figuring out which problems you've tried to solve: " ++ err
-            Right probs -> return probs
-
-    problemDirs = do
-        ps <- problems
-        mapM problemDir ps
-

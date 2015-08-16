@@ -1,5 +1,7 @@
 module Constants where
 
+import           System.FilePath.Posix ((<.>))
+
 edenName :: String
 edenName = "eden"
 
@@ -39,14 +41,17 @@ defaultTestSuiteName = "testsuite.bin"
 defaultTestRuleName :: String
 defaultTestRuleName = "test"
 
+defaultWriteupExtenstion :: String
+defaultWriteupExtenstion = "tex"
+
 defaultExplanationName :: String
-defaultExplanationName = "explanation.tex"
+defaultExplanationName = "explanation" <.> defaultWriteupExtenstion
 
 publishImportsFileName :: String
-publishImportsFileName = "explanations.tex"
+publishImportsFileName = "explanations" <.> defaultWriteupExtenstion
 
 publishLibraryImportsFileName :: String
-publishLibraryImportsFileName = "libraries.tex"
+publishLibraryImportsFileName = "libraries" <.> defaultWriteupExtenstion
 
 mainWriteupFile :: String
-mainWriteupFile = "main.tex"
+mainWriteupFile = "main" <.> defaultWriteupExtenstion
