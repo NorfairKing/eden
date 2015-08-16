@@ -12,20 +12,21 @@ import           Solutions
 import           Types
 import           Utils
 
-run :: EdenRun ()
-run = do
-    target <- askEden run_target
-    runTarget target
+run :: Target -> EdenRun ()
+run TargetAll = notImplementedYet
+run TargetAllLibraries = notImplementedYet
+run TargetAllProblems = notImplementedYet
+run (TargetProblem p) = notImplementedYet
+run (TargetSolution p l) = do
+    md <- solutionDir p l
+    bin <- askEden run_binary
+    inp <- askEden run_input
+    let exec = md </> bin
 
-runTarget :: RunTarget -> EdenRun ()
-runTarget rt = do
-    md <- solutionDir (run_target_problem rt) (run_target_language rt)
-    let exec = md </> run_target_binary rt
-
-    mInputPath <- case run_target_input rt of
+    mInputPath <- case inp of
                     Just rti -> return $ Just rti
                     Nothing  -> do
-                        dif <- defaultInputFilePath $ run_target_problem rt
+                        dif <- defaultInputFilePath p
                         exists <- liftIO $ doesFileExist dif
                         if exists
                         then return $ Just dif

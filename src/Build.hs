@@ -6,34 +6,45 @@ import           Solutions
 import           Types
 import           Utils
 
-build :: EdenBuild ()
-build = do
-    target <- askEden build_target
 
-    buildLib (build_target_language target) `catchError` (\e -> return ())
-    buildTarget target
 
-buildLib :: Language -> Eden c ()
+build :: Target -> EdenBuild ()
+build TargetAll = notImplementedYet
+build TargetAllLibraries = notImplementedYet
+build (TargetLibrary l) = buildLib l
+build TargetAllProblems = notImplementedYet
+build (TargetProblem p) = notImplementedYet
+build (TargetSolution p l) = buildSolution p l
+
+buildSolution :: Problem -> Language -> EdenBuild ()
+buildSolution p l = do
+    build (TargetLibrary l) `catchError` (\e -> return ())
+
+    md <- solutionDir p l
+    bmf <- askEden build_makefile
+    bmr <- askEden build_makerule
+    mf <- case bmf of
+            Nothing -> makefilePath l
+            Just f  -> return f
+    make md mf bmr
+
+buildLib :: Language -> EdenBuild ()
 buildLib l = do
     md <- libraryDir l
     mf <- libMakefilePath l
 
     make md mf Nothing
 
+defaultBuild :: EdenBuild a -> Eden c a
+defaultBuild builder = do
+    o <- getGlobal
+    eea <- liftIO $ runEden builder (o, defaultBuildOption)
+    case eea of
+        Left err -> throwError err
+        Right a  -> return a
 
-buildTarget :: BuildTarget -> Eden c ()
-buildTarget bt = do
-    md <- solutionDir (build_target_problem bt) (build_target_language bt)
-    mf <- case build_target_makefile bt of
-            Nothing -> makefilePath $ build_target_language bt
-            Just f  -> return f
-    let mr = build_target_makerule bt
-    make md mf mr
-
-target :: Problem -> Language -> BuildTarget
-target p l = BuildTarget {
-        build_target_problem = p
-    ,   build_target_language = l
-    ,   build_target_makefile = Nothing
-    ,   build_target_makerule = Nothing
+defaultBuildOption :: BuildOptions
+defaultBuildOption = BuildOptions {
+        build_makefile = Nothing
+      , build_makerule = Nothing
     }

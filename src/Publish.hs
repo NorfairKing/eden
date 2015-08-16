@@ -12,13 +12,9 @@ import           Solutions
 import           Types
 import           Utils
 
-publish :: EdenPublish ()
-publish = do
-    target <- askEden publish_target
-
-    case target of
-        PublishProblem p -> buildWriteupForProblem p
-        PublishAll -> do
+publish :: PublishTarget -> EdenPublish ()
+publish (PublishProblem p) = buildWriteupForProblem p
+publish PublishAll         = do
             generateExplanationImports
             generateLibraryImports
             buildWriteups

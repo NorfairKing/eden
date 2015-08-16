@@ -15,18 +15,15 @@ import           Solutions
 import           TH
 import           Types
 
-generate :: EdenGenerate ()
-generate = do
-    target <- askEden generate_target
-    case target of
-        Problem p       -> generateProblem p
-        Solution p l    -> generateSolution p l
-        Library l       -> generateLibrary l
-        Tests l         -> generateTests l
-        BuildDir l      -> generateBuild l
-        Environment l   -> generateEnvironment l
-        Publishing      -> generatePublishing
-        GettingStarted  -> generateGettingStarted
+generate :: GenerationTarget -> EdenGenerate ()
+generate (Problem p)      = generateProblem p
+generate (Solution p l)   = generateSolution p l
+generate (Library l)      = generateLibrary l
+generate (Tests l)        = generateTests l
+generate (BuildDir l)     = generateBuild l
+generate (Environment l)  = generateEnvironment l
+generate Publishing       = generatePublishing
+generate (GettingStarted) = generateGettingStarted
 
 
 generateProblem :: Problem -> EdenGenerate ()

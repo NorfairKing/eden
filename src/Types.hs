@@ -19,25 +19,26 @@ data Options = Options {
     ,   opt_command :: Command
     } deriving Show
 
+defaultGlobalOptions = GlobalOptions {
+        opt_commands = False
+    }
 data GlobalOptions = GlobalOptions {
         opt_commands :: Bool
     } deriving Show
 
 data Command = Init InitOptions
-             | Generate GenerateOptions
-             | Build BuildOptions
-             | Test TestOptions
-             | Run RunOptions
-             | Publish PublishOptions
+             | Generate GenerateOptions GenerationTarget
+             | Build BuildOptions Target
+             | Test TestOptions Target
+             | Run RunOptions Target
+             | Publish PublishOptions PublishTarget
              | Statistics StatisticsOptions
   deriving Show
 
 data InitOptions = InitOptions
   deriving Show
 
-data GenerateOptions = GenerateOptions {
-        generate_target :: GenerationTarget
-    }
+data GenerateOptions = GenerateOptions
   deriving Show
 
 data GenerationTarget = Problem Problem
@@ -51,43 +52,20 @@ data GenerationTarget = Problem Problem
   deriving Show
 
 data BuildOptions = BuildOptions {
-        build_target :: BuildTarget
+        build_makefile :: Maybe FilePath
+    ,   build_makerule :: Maybe String
     } deriving Show
 
-data BuildTarget = BuildTarget {
-        build_target_problem  :: Problem
-    ,   build_target_language :: Language
-    ,   build_target_makefile :: Maybe FilePath
-    ,   build_target_makerule :: Maybe String
-    } deriving Show
-
-data TestOptions = TestOptions {
-        test_target :: TestTarget
-    } deriving Show
-
-data TestTarget = TestTargetAll
-                | TestTargetAllLibraries
-                | TestTargetLibrary Language
-                | TestTargetAllProblems
-                | TestTargetProblem Problem
-                | TestTargetSolution Problem Language
+data TestOptions = TestOptions
     deriving Show
 
-
 data RunOptions = RunOptions {
-        run_target :: RunTarget
+        run_input  :: Maybe FilePath
+    ,   run_binary :: String
     } deriving Show
 
-data RunTarget = RunTarget {
-        run_target_problem  :: Problem
-    ,   run_target_language :: Language
-    ,   run_target_input    :: Maybe FilePath
-    ,   run_target_binary   :: String
-    } deriving Show
-
-data PublishOptions = PublishOptions {
-        publish_target :: PublishTarget
-    } deriving Show
+data PublishOptions = PublishOptions
+    deriving Show
 
 data PublishTarget = PublishAll
                    | PublishProblem Problem
@@ -95,6 +73,9 @@ data PublishTarget = PublishAll
 
 data StatisticsOptions = StatisticsOptions
     deriving Show
+
+
+--[ Statistics ]--
 
 data StatGenerator a = StatGenerator {
         statgen_name :: String
@@ -108,6 +89,18 @@ data StatResult a = StatResult {
 
 instance Show a => Show (StatResult a) where
     show sr = statres_name sr ++ ": " ++ show (statres_result sr)
+
+
+--[ Targets ]--
+
+data Target = TargetAll
+            | TargetAllLibraries
+            | TargetLibrary Language
+            | TargetAllProblems
+            | TargetProblem Problem
+            | TargetSolution Problem Language
+    deriving Show
+
 
 --[ Monads ]--
 

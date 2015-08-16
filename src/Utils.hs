@@ -70,6 +70,10 @@ make dir makefile mrule = do
                         "make"
                     ,   "--directory"   , dir
                     ,   "--file"        , makefile
+                    ,   "--jobs"
                     ,   rulestr
                     ]
             runRaw cmd
+
+notImplementedYet :: Eden c ()
+notImplementedYet = throwError "This feature is not implemented yet."
