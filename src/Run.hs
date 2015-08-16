@@ -1,51 +1,51 @@
 module Run where
 
-import           Text.Printf           (printf)
-
 import           System.Directory      (doesFileExist)
 import           System.FilePath.Posix ((</>))
 
-import           Constants
 import           Eden
-import           Paths
 import           Solutions
 import           Types
 import           Utils
 
-run :: EdenRun ()
-run = do
-    target <- askEden run_target
-    runTarget target
+run :: Target -> EdenRun ()
+run TargetAll             = runAll
+run TargetAllLibraries    = throwError "What did you think this would do? It doesn't make any sense."
+run TargetAllProblems     = runAllProblems
+run (TargetProblem p)     = runProblem p
+run (TargetSolution p l)  = runSolution p l
 
-runTarget :: RunTarget -> EdenRun ()
-runTarget rt = do
-    md <- solutionDir (run_target_problem rt) (run_target_language rt)
-    let exec = md </> run_target_binary rt
+runAll :: EdenRun ()
+runAll = runAllProblems
 
-    mInputPath <- case run_target_input rt of
+runAllProblems :: EdenRun ()
+runAllProblems = do
+    allProblems <- problems
+    mapM_ runProblem allProblems
+
+runProblem :: Problem -> EdenRun ()
+runProblem p = do
+    allSolutions <- solutions p
+    mapM_ (runSolution p) allSolutions
+
+runSolution :: Problem -> Language -> EdenRun ()
+runSolution p l = do
+    md <- solutionDir p l
+    bin <- askEden run_binary
+    inp <- askEden run_input
+    let cmd = md </> bin
+
+    minput <- case inp of
                     Just rti -> return $ Just rti
                     Nothing  -> do
-                        dif <- defaultInputFilePath $ run_target_problem rt
+                        dif <- defaultInputFilePath p
                         exists <- liftIO $ doesFileExist dif
                         if exists
                         then return $ Just dif
                         else return $ Nothing
 
-    runSolution exec mInputPath
-
-
-
-runSolution :: FilePath -- The absolute path to the executable to run
-            -> Maybe FilePath -- The absolute path to the input file
-            -> EdenRun ()
-runSolution file minput = do
-    let instr = case minput of
-                    Nothing -> ""
-                    Just i  -> unwords ["<", i]
-    let cmd = unwords $
-            [
-                file
-            ,   instr
-            ]
-    result <- runCommand cmd
-    liftIO $ putStr result
+    printIf (askGlobal opt_commands) cmd
+    result <- case minput of
+        Nothing  -> runCommand cmd
+        Just inf -> runCommandWithInput cmd inf
+    liftIO $ putStr $ unwords [problemDirName p, padNWith 8 ' ' l ++ ":", result]

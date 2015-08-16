@@ -1,15 +1,13 @@
 module Init where
 
 
-import           Data.Version          (showVersion)
-import           Paths_eden            (version)
-import           System.Directory      (createDirectoryIfMissing,
-                                        getCurrentDirectory)
-import           System.FilePath.Posix ((</>))
-import           System.IO             (Handle, IOMode (WriteMode), hPutStrLn,
-                                        withFile)
+import           Data.Version     (showVersion)
+import           Paths_eden       (version)
+import           System.Directory (createDirectoryIfMissing,
+                                   getCurrentDirectory)
+import           System.IO        (Handle, IOMode (WriteMode), hPutStrLn,
+                                   withFile)
 
-import           Constants
 import           Paths
 import           Types
 

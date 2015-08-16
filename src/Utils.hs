@@ -1,15 +1,22 @@
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 module Utils where
 
-import           System.TimeIt  (timeItT)
+import           System.Exit           (ExitCode (..))
+import           System.FilePath.Posix (hasExtension)
+import           System.IO             (hGetContents)
+import           System.Process        (readProcess, runInteractiveCommand,
+                                        waitForProcess)
 
-import           System.Exit    (ExitCode (..))
-import           System.IO      (hGetContents)
-import           System.Process (createProcess, readProcess,
-                                 runInteractiveCommand, shell, system,
-                                 waitForProcess)
 
 import           Eden
 import           Types
+
+runCommandWithInput :: String -> FilePath -> Eden c String
+runCommandWithInput str inf = do
+    instr <- liftIO $ readFile inf
+    liftIO $ readProcess bin args instr
+  where (bin:args) = words str
 
 
 runCommand :: String -> Eden c String
@@ -19,7 +26,7 @@ runCommand str = liftIO $ readProcess bin args ""
 runRaw :: String -> Eden c ()
 runRaw cmd = do
     printIf (askGlobal opt_commands) cmd
-    (inh, outh, errh, ph) <- liftIO $ runInteractiveCommand cmd
+    (_, outh, errh, ph) <- liftIO $ runInteractiveCommand cmd
     ec <- liftIO $ waitForProcess ph
     case ec of
         ExitSuccess -> return ()
@@ -41,19 +48,15 @@ printIf bool str = do
     else return ()
 
 
-make :: FilePath     -- Make directory
-     -> FilePath     -- Make file
-     -> Maybe String -- Make rule
-     -> Eden c ()
-make dir makefile mrule = do
-    let rulestr = case mrule of
-                    Nothing -> ""
-                    Just rule -> rule
-    let cmd = unwords $
-            [
-                "make"
-            ,   "--directory"   , dir
-            ,   "--file"        , makefile
-            ,   rulestr
-            ]
-    runRaw cmd
+notImplementedYet :: (Monad m, MonadError String m) => m ()
+notImplementedYet = throwError "This feature is not implemented yet."
+
+padNWith :: Int -> Char -> String -> String
+padNWith m c s = replicate (m - len) c ++ s
+  where len = length s
+
+realDir :: FilePath -> Bool
+realDir d | d == "."            = False
+          | d == ".."           = False
+          | hasExtension d      = False
+          | otherwise           = True

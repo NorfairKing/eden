@@ -4,10 +4,12 @@ import           System.Directory      (doesFileExist, getDirectoryContents)
 import           System.FilePath.Posix ((</>))
 
 import           Control.Monad         (filterM)
+import           Data.List             (nub, sort)
 
 import           Constants
 import           Paths
 import           Types
+import           Utils
 
 --[ Problems ]--
 
@@ -18,13 +20,13 @@ problemDir p = do
     return $ root </> dirName
 
 problemDirName :: Problem -> FilePath
-problemDirName = padN 3
+problemDirName = padNWith 3 '0' . show
 
 problems :: Eden c [Problem]
 problems = do
     root <- edenRoot
     cts <- liftIO $ getDirectoryContents root
-    return $ map read $ filter isProblemDir cts
+    return $ sort $ map read $ filter isProblemDir cts
   where
     isProblemDir d = elem d $ map problemDirName nums
     nums = [1..999]
@@ -41,7 +43,18 @@ solutions :: Problem -> Eden c [FilePath]
 solutions p = do
     dir <- problemDir p
     cts <- liftIO $ getDirectoryContents dir
-    return $ filter realDir cts
+    return $ sort $ filter realDir cts
+
+allSolutions :: Eden c [FilePath]
+allSolutions = do
+    probs <- problems
+    allSols <- mapM solutions probs
+    return $ concat allSols
+
+languages :: Eden c [Language]
+languages = do
+    allSols <- allSolutions
+    return $ nub allSols
 
 --[ Libraries ]--
 
@@ -130,16 +143,3 @@ explanations = do
     containsExplanation p = do
         probDir <- problemDir p
         liftIO $ doesFileExist $ probDir </> defaultExplanationName
-
-
---[ Utils ]--
-
-padN :: Int -> Int -> String
-padN m n = replicate (m - len) '0' ++ show n
-  where len = length $ show n
-
-
-
-realDir d | d == "."  = False
-          | d == ".." = False
-          | otherwise = True

@@ -1,27 +1,18 @@
 module Test where
 
-import           Paths
-
 import           Build
 import           Constants
-import           Eden
+import           Make
 import           Solutions
 import           Types
-import           Utils
 
-test :: EdenTest ()
-test = do
-    target <- askEden test_target
-    testTarget target
-
-
-testTarget :: TestTarget -> EdenTest ()
-testTarget TestTargetAll = testAll
-testTarget TestTargetAllLibraries = testLibraries
-testTarget (TestTargetLibrary l) = testLibrary l
-testTarget TestTargetAllProblems = testProblems
-testTarget (TestTargetProblem p) = testProblem p
-testTarget (TestTargetSolution p l) = testSolution p l
+test :: Target -> EdenTest ()
+test TargetAll            = testAll
+test TargetAllLibraries   = testLibraries
+test (TargetLibrary l)    = testLibrary l
+test TargetAllProblems    = testProblems
+test (TargetProblem p)    = testProblem p
+test (TargetSolution p l) = testSolution p l
 
 testAll :: EdenTest ()
 testAll = do
@@ -35,7 +26,7 @@ testLibraries = do
 
 testLibrary :: Language -> EdenTest ()
 testLibrary l = do
-    buildLib l
+    defaultBuild $ buildLibrary l
 
     md <- testsDir l
     mf <- testMakefilePath l
@@ -55,8 +46,8 @@ testProblem p = do
 
 testSolution :: Problem -> Language -> EdenTest ()
 testSolution p l = do
-    buildLib l
-    buildTarget $ target p l
+    defaultBuild $ buildLibrary l
+    defaultBuild $ build $ TargetSolution p l
 
     md <- solutionDir p l
     mf <- makefilePath l

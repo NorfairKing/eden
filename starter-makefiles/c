@@ -1,47 +1,17 @@
 CC = gcc
-CPP = g++
-BIN_NAME = solution.bin
-SOLUTION_NAME = solution.c
-OPTIMISATION_FLAG = -O3
-WARNING_FLAGS = -Wall -Werror
 LIB_DIR = $(EDEN_ROOT)/lib/c
-LIB_DIR_FLAGS = -L$(LIB_DIR) -I$(LIB_DIR)
-STD_LIBS = -lm
 SRCS=$(wildcard $(LIB_DIR)/*.c)
 SOLUTIONS=$(wildcard *.c)
 SOLVERS=$(SOLUTIONS:.c=.bin)
-TESTSUITE = testsuite.bin
-LIB_FLAGS = -lgtest
-TEST_SRCS = test.cpp
-CC_FLAGS = $(OPTIMISATION_FLAG) \
-           $(WARNING_FLAGS) \
-           $(LIB_DIR_FLAGS) \
-		   $(STD_LIBS)
-TEST_FLAGS = \
-	-o $(TESTSUITE) \
-	$(LIB_DIR_FLAGS) \
-	$(LIB_FLAGS)
+CC_FLAGS = -L$(LIB_DIR) -I$(LIB_DIR)
 
-all: solver $(SOLVERS)
-
-solver:
-	$(CC) $(SOLUTION_NAME) $(SRCS) $(CC_FLAGS) -o $(BIN_NAME)
+all: $(SOLVERS)
 
 %.bin : %.c
 	$(CC) $< $(SRCS) -o $@ $(CC_FLAGS)
 
-
-test: testsuite
-	./$(TESTSUITE)
-
-testsuite:
-	$(CPP) $(SRCS) $(TEST_SRCS) $(TEST_FLAGS)
-
-DIRTY_EXT = *.o
-DIRTY = $(DIRTY_EXT) $(BIN_NAME)
-
-clean:
-	rm -f $(DIRTY)
+test:
+	@echo placeholder
 
 love:
 	@echo not war

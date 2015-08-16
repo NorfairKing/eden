@@ -1,32 +1,24 @@
 {-# LANGUAGE QuasiQuotes #-}
 module Generate where
 
-import           System.Directory          (createDirectoryIfMissing)
-import           System.FilePath.Posix     ((</>))
-import           System.IO                 (hFlush, stdout)
-import           Text.Heredoc
-
-import           Language.Haskell.TH.Quote
+import           System.Directory      (createDirectoryIfMissing)
+import           System.FilePath.Posix ((</>))
+import           System.IO             (hFlush, stdout)
 
 import           Constants
-import           Eden
-import           Paths
 import           Solutions
 import           TH
 import           Types
 
-generate :: EdenGenerate ()
-generate = do
-    target <- askEden generate_target
-    case target of
-        Problem p       -> generateProblem p
-        Solution p l    -> generateSolution p l
-        Library l       -> generateLibrary l
-        Tests l         -> generateTests l
-        BuildDir l      -> generateBuild l
-        Environment l   -> generateEnvironment l
-        Publishing      -> generatePublishing
-        GettingStarted  -> generateGettingStarted
+generate :: GenerationTarget -> EdenGenerate ()
+generate (Problem p)      = generateProblem p
+generate (Solution p l)   = generateSolution p l
+generate (Library l)      = generateLibrary l
+generate (Tests l)        = generateTests l
+generate (BuildDir l)     = generateBuild l
+generate (Environment l)  = generateEnvironment l
+generate Publishing       = generatePublishing
+generate (GettingStarted) = generateGettingStarted
 
 
 generateProblem :: Problem -> EdenGenerate ()
@@ -67,11 +59,19 @@ cMakefile = [litFile|starter-makefiles/c|]
 haskellMakefile :: String
 haskellMakefile = [litFile|starter-makefiles/haskell|]
 
+pythonMakefile :: String
+pythonMakefile = [litFile|starter-makefiles/python|]
+
+javaMakefile :: String
+javaMakefile = [litFile|starter-makefiles/java|]
+
 starterMakefile :: Language -> Maybe String
 starterMakefile lang = lookup lang $
     [
         ("c", cMakefile)
     ,   ("haskell", haskellMakefile)
+    ,   ("python", pythonMakefile)
+    ,   ("java", javaMakefile)
     ]
 
 generateEnvironment :: Language -> EdenGenerate ()

@@ -1,46 +1,84 @@
 module Build where
 
-import           System.Directory (doesDirectoryExist, doesFileExist)
-
 import           Eden
+import           Make
 import           Paths
 import           Solutions
 import           Types
 import           Utils
 
-build :: EdenBuild ()
-build = do
-    target <- askEden build_target
 
-    buildLib $ build_target_language target
-    buildTarget target
 
-buildLib :: Language -> Eden c ()
-buildLib l = do
+build :: Target -> EdenBuild ()
+build TargetAll             = buildAll
+build TargetAllLibraries    = buildLibraries
+build (TargetLibrary l)     = buildLibrary l
+build TargetAllProblems     = buildProblems
+build (TargetProblem p)     = buildProblem p
+build (TargetSolution p l)  = buildSolution p l
+
+buildAll :: EdenBuild ()
+buildAll = do
+    buildLibraries
+    buildProblems
+
+buildLibraries :: EdenBuild ()
+buildLibraries = do
+    allLibraries <- libraries
+    mapM_ buildLibrary allLibraries
+
+buildLibrary :: Language -> EdenBuild ()
+buildLibrary l = do
     md <- libraryDir l
     mf <- libMakefilePath l
+    make md mf Nothing
 
-    libdirExists   <- liftIO $ doesDirectoryExist md
-    makefileExists <- liftIO $ doesFileExist mf
+buildProblems :: EdenBuild ()
+buildProblems = do
+    allProblems <- problems
+    mapM_ buildProblem allProblems
 
-    if libdirExists && makefileExists
-    then make md mf Nothing
-    else return ()
+buildProblem :: Problem -> EdenBuild ()
+buildProblem p = do
+    allSolutions <- solutions p
+    mapM_ (buildSolution p) allSolutions
 
+buildSolution :: Problem -> Language -> EdenBuild ()
+buildSolution p l = do
+    build (TargetLibrary l) `catchError` (\e -> return ())
 
-buildTarget :: BuildTarget -> Eden c ()
-buildTarget bt = do
-    md <- solutionDir (build_target_problem bt) (build_target_language bt)
-    mf <- case build_target_makefile bt of
-            Nothing -> makefilePath $ build_target_language bt
+    md <- solutionDir p l
+    bmf <- askEden build_makefile
+    bmr <- askEden build_makerule
+    mf <- case bmf of
+            Nothing -> makefilePath l
             Just f  -> return f
-    let mr = build_target_makerule bt
-    make md mf mr
+    make md mf bmr
 
-target :: Problem -> Language -> BuildTarget
-target p l = BuildTarget {
-        build_target_problem = p
-    ,   build_target_language = l
-    ,   build_target_makefile = Nothing
-    ,   build_target_makerule = Nothing
+--[ Building in general ]--
+
+buildFirst :: EdenBuild a -> Eden c a
+buildFirst builder = do
+    o <- getGlobal
+    (eea, mts) <- liftIO $ runEden builder (o, defaultBuildOption)
+    case eea of
+        Left err -> throwError err
+        Right a  -> do
+            makeTargetsFirst mts
+            return a
+
+defaultBuild :: EdenBuild a -> Eden c a
+defaultBuild builder = do
+    o <- getGlobal
+    (eea, mts) <- liftIO $ runEden builder (o, defaultBuildOption)
+    case eea of
+        Left err -> throwError err
+        Right a  -> do
+            tell mts
+            return a
+
+defaultBuildOption :: BuildOptions
+defaultBuildOption = BuildOptions {
+        build_makefile = Nothing
+      , build_makerule = Nothing
     }

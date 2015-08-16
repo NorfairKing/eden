@@ -1,24 +1,20 @@
 module Publish where
 
 import           Data.List
-import           System.Directory      (setCurrentDirectory)
-import           System.FilePath.Posix ((</>))
+import           System.Directory      (doesFileExist, getDirectoryContents,
+                                        removeFile, setCurrentDirectory)
+import           System.FilePath.Posix (replaceExtension, takeExtension, (</>))
 
 import           Constants
-import           Eden
-import           Paths
 import           Solutions
 import           Types
 import           Utils
 
-publish :: EdenPublish ()
-publish = do
-    target <- askEden publish_target
-
-    case target of
-        PublishProblem p -> buildWriteupForProblem p
-        PublishAll -> do
+publish :: PublishTarget -> EdenPublish ()
+publish (PublishProblem p) = buildWriteupForProblem p
+publish PublishAll         = do
             generateExplanationImports
+            generateLibraryImports
             buildWriteups
 
 generateExplanationImports :: EdenPublish ()
@@ -31,14 +27,30 @@ generateExplanationImports = do
     makeImport :: Problem -> String
     makeImport p = "\\subfile{../" ++ problemDirName p </> defaultExplanationName ++ "}"
 
+generateLibraryImports :: EdenPublish ()
+generateLibraryImports = do
+    ld <- libDir
+    cts <- liftIO $ getDirectoryContents ld
+    let files = filter (\f -> takeExtension f == ".tex") cts
+    let str = unlines . sort $ map makeImport files
+    dir <- publishDir
+    liftIO $ writeFile (dir </> publishLibraryImportsFileName) str
+  where
+    makeImport :: FilePath -> String
+    makeImport f = "\\subfile{../lib/" ++ f ++"}"
+
 buildWriteups :: EdenPublish ()
 buildWriteups = buildLatex $ mainWriteupFile
 
 buildWriteupForProblem :: Problem -> EdenPublish ()
 buildWriteupForProblem p = do
     path <- explanationPath p
+    let resultpath = replaceExtension path "pdf"
+    exists <- liftIO $ doesFileExist resultpath
+    if exists
+    then liftIO $ removeFile resultpath
+    else return ()
     buildLatex path
-
 
 buildLatex :: FilePath -> EdenPublish ()
 buildLatex fp = do

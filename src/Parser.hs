@@ -3,6 +3,8 @@ module Parser where
 import           Options.Applicative
 
 import           Constants
+import           Eden
+import           Solutions
 import           Types
 
 
@@ -34,6 +36,7 @@ parseCommand = hsubparser $ mconcat
     , command "test"     parseTest
     , command "run"      parseRun
     , command "publish"  parsePublish
+    , command "stats"    parseStatistics
     ]
 
 
@@ -48,84 +51,75 @@ parseInit = info parser modifier
 parseGenerate :: ParserInfo Command
 parseGenerate = info parser modifier
   where
-    parser = Generate <$> parseGenerateOptions
+    parser = Generate <$> parseGenerateOptions <*> parseGenerationTarget
     modifier = fullDesc
             <> progDesc "Generate the environment."
 
 parseGenerateOptions :: Parser GenerateOptions
-parseGenerateOptions = GenerateOptions <$> parseGenerationTarget
+parseGenerateOptions = pure GenerateOptions
 
 parseGenerationTarget :: Parser GenerationTarget
 parseGenerationTarget = hsubparser $ mconcat
     [
-      command "problem"         (info parseProblemTarget idm)
-    , command "solution"        (info parseSolutionTarget idm)
-    , command "library"         (info parseLibraryTarget idm)
-    , command "tests"           (info parseTestsTarget idm)
-    , command "build"           (info parseBuildDirTarget idm)
-    , command "environment"     (info parseEnvironmentTarget idm)
-    , command "writeups"        (info parsePublishingTarget idm)
-    , command "getting-started" (info parseGettingStartedTarget idm)
+      command "problem"         (info parseGenerateProblemTarget idm)
+    , command "solution"        (info parseGenerateSolutionTarget idm)
+    , command "library"         (info parseGenerateLibraryTarget idm)
+    , command "tests"           (info parseGenerateTestsTarget idm)
+    , command "build"           (info parseGenerateBuildDirTarget idm)
+    , command "environment"     (info parseGenerateEnvironmentTarget idm)
+    , command "writeups"        (info parseGeneratePublishingTarget idm)
+    , command "getting-started" (info parseGenerateGettingStartedTarget idm)
     ]
 
-parseProblemTarget :: Parser GenerationTarget
-parseProblemTarget = Problem
+parseGenerateProblemTarget :: Parser GenerationTarget
+parseGenerateProblemTarget = Problem
     <$> argument auto (help "the number of the problem to generate for"
                     <> metavar "PROBLEM")
 
-parseSolutionTarget :: Parser GenerationTarget
-parseSolutionTarget = Solution
+parseGenerateSolutionTarget :: Parser GenerationTarget
+parseGenerateSolutionTarget = Solution
     <$> argument auto (help "the number of the problem to generate for"
                     <> metavar "PROBLEM")
     <*> argument str (help "the language of the solution to generate for"
                     <> metavar "LANGUAGE")
 
-parseLibraryTarget :: Parser GenerationTarget
-parseLibraryTarget = Library
+parseGenerateLibraryTarget :: Parser GenerationTarget
+parseGenerateLibraryTarget = Library
     <$> argument str (help "the language to generate the library for"
                     <> metavar "LANGUAGE")
 
-parseTestsTarget :: Parser GenerationTarget
-parseTestsTarget = Tests
+parseGenerateTestsTarget :: Parser GenerationTarget
+parseGenerateTestsTarget = Tests
     <$> argument str (help "the language to generate the tests for"
                     <> metavar "LANGUAGE")
 
-parseBuildDirTarget :: Parser GenerationTarget
-parseBuildDirTarget = BuildDir
+parseGenerateBuildDirTarget :: Parser GenerationTarget
+parseGenerateBuildDirTarget = BuildDir
     <$> argument str (help "the language to generate the build dir for"
                     <> metavar "LANGUAGE")
 
-parseEnvironmentTarget :: Parser GenerationTarget
-parseEnvironmentTarget = Environment
+parseGenerateEnvironmentTarget :: Parser GenerationTarget
+parseGenerateEnvironmentTarget = Environment
     <$> argument str (help "the language to generate a development environment for"
                     <> metavar "LANGUAGE")
 
-parsePublishingTarget :: Parser GenerationTarget
-parsePublishingTarget = pure Publishing
+parseGeneratePublishingTarget :: Parser GenerationTarget
+parseGeneratePublishingTarget = pure Publishing
 
-parseGettingStartedTarget :: Parser GenerationTarget
-parseGettingStartedTarget = pure GettingStarted
+parseGenerateGettingStartedTarget :: Parser GenerationTarget
+parseGenerateGettingStartedTarget = pure GettingStarted
 
 
 parseBuild :: ParserInfo Command
 parseBuild = info parser modifier
   where
-    parser = Build <$> parseBuildOptions
+    parser = Build <$> parseBuildOptions <*> parseTarget
     modifier = fullDesc
             <> progDesc "Build a solution."
 
 parseBuildOptions :: Parser BuildOptions
-parseBuildOptions = BuildOptions <$> parseBuildTarget
-
-parseBuildTarget :: Parser BuildTarget
-parseBuildTarget = BuildTarget
-    <$> argument    auto
-        (help "the number of the problem for which to build the solution"
-        <> metavar "PROBLEM")
-    <*> argument    str
-        (help "the language of the problem for which to build the solution"
-        <> metavar "LANGUAGE")
-    <*> option      (Just <$> str)
+parseBuildOptions = BuildOptions
+    <$> option      (Just <$> str)
         (help "the makefile to use for this build (relative to eden root or absolute)"
         <> long "makefile"
         <> short 'm'
@@ -139,71 +133,21 @@ parseBuildTarget = BuildTarget
         <> metavar "MAKERULE")
 
 parseTest :: ParserInfo Command
-parseTest = info parser modifier
-  where
-    parser = Test <$> parseTestOptions
-    modifier = fullDesc
-            <> progDesc "Test a test target"
+parseTest = info (Test <$> parseTestOptions <*> parseTarget) idm
 
 parseTestOptions :: Parser TestOptions
-parseTestOptions = TestOptions <$> parseTestTarget
-
-parseTestTarget :: Parser TestTarget
-parseTestTarget = hsubparser $ mconcat
-    [
-        command "all"       $ info parseAllTestTarget idm
-    ,   command "libraries" $ info parseAllLibrariesTestTarget idm
-    ,   command "library"   $ info parseLibraryTestTarget idm
-    ,   command "problems"  $ info parseAllProblemsTestTarget idm
-    ,   command "problem"   $ info parseProblemTestTarget idm
-    ,   command "solution"  $ info parseSolutionTestTarget idm
-    ]
-
-parseAllTestTarget :: Parser TestTarget
-parseAllTestTarget = pure TestTargetAll
-
-parseAllLibrariesTestTarget :: Parser TestTarget
-parseAllLibrariesTestTarget = pure TestTargetAllLibraries
-
-parseLibraryTestTarget :: Parser TestTarget
-parseLibraryTestTarget = TestTargetLibrary
-    <$> argument str (help "the library to test"
-                    <> metavar "LANGUAGE")
-
-parseAllProblemsTestTarget :: Parser TestTarget
-parseAllProblemsTestTarget = pure TestTargetAllProblems
-
-parseProblemTestTarget :: Parser TestTarget
-parseProblemTestTarget = TestTargetProblem
-    <$> argument auto (help "the problem to test"
-                    <> metavar "PROBLEM")
-
-parseSolutionTestTarget :: Parser TestTarget
-parseSolutionTestTarget = TestTargetSolution
-    <$> argument auto (help "the problem to test"
-                    <> metavar "PROBLEM")
-    <*> argument str (help "the language of the solution to test"
-                    <> metavar "LANGUAGE")
+parseTestOptions = pure TestOptions
 
 parseRun :: ParserInfo Command
 parseRun = info parser modifier
   where
-    parser = Run <$> parseRunOptions
+    parser = Run <$> parseRunOptions <*> parseTarget
     modifier = fullDesc
             <> progDesc "Run a solution."
 
 parseRunOptions :: Parser RunOptions
-parseRunOptions = RunOptions <$> parseRunTarget
-
-parseRunTarget :: Parser RunTarget
-parseRunTarget = RunTarget
-    <$> argument    auto
-        (help "the number of the problem for which to run the solution"
-        <> metavar "PROBLEM")
-    <*> argument    str
-        (help "the language of the problem for which to run the solution"
-        <> metavar "LANGUAGE")
-    <*> option      (Just <$> str)
+parseRunOptions = RunOptions
+    <$> option      (Just <$> str)
         (help "the input file to be used in the solution"
         <> long "input"
         <> short 'i'
@@ -216,15 +160,63 @@ parseRunTarget = RunTarget
         <> value defaultExecutable
         <> metavar "BINARY")
 
+parseTarget :: Parser Target
+parseTarget = hsubparser $ mconcat
+        [
+            command "all"       $ parseAllTarget
+        ,   command "libraries" $ parseAllLibrariesTarget
+        ,   command "library"   $ parseLibraryTarget
+        ,   command "problems"  $ parseAllProblemsTarget
+        ,   command "problem"   $ parseProblemTarget
+        ,   command "solution"  $ parseSolutionTarget
+        ]
+
+parseAllTarget :: ParserInfo Target
+parseAllTarget = info (pure TargetAll) idm
+
+parseAllLibrariesTarget :: ParserInfo Target
+parseAllLibrariesTarget = info (pure TargetAllLibraries) idm
+
+parseLibraryTarget :: ParserInfo Target
+parseLibraryTarget = info parser modifier
+  where
+    parser = TargetLibrary
+             <$> argument str (help "the library to test"
+                             <> metavar "LANGUAGE")
+    modifier = idm
+
+parseAllProblemsTarget :: ParserInfo Target
+parseAllProblemsTarget = info (pure TargetAllProblems) idm
+
+parseProblemTarget :: ParserInfo Target
+parseProblemTarget = info parser modifier
+  where
+    parser = TargetProblem
+             <$> argument auto (help "the problem to test"
+                    <> metavar "PROBLEM"
+                    <> completer problemCompleter)
+    modifier = idm
+
+parseSolutionTarget :: ParserInfo Target
+parseSolutionTarget = info parser modifier
+  where
+    parser = TargetSolution
+             <$> argument auto (help "the problem to test"
+                    <> metavar "PROBLEM"
+                    <> completer problemCompleter)
+             <*> argument str (help "the language of the solution to test"
+                    <> metavar "LANGUAGE")
+    modifier = idm
+
 parsePublish :: ParserInfo Command
 parsePublish = info parser modifier
   where
-    parser = Publish <$> parsePublishOptions
+    parser = Publish <$> parsePublishOptions <*> parsePublishTarget
     modifier = fullDesc
             <> progDesc "Publish writeups."
 
 parsePublishOptions :: Parser PublishOptions
-parsePublishOptions = PublishOptions <$> parsePublishTarget
+parsePublishOptions = pure PublishOptions
 
 parsePublishTarget :: Parser PublishTarget
 parsePublishTarget = hsubparser $ mconcat
@@ -241,3 +233,27 @@ parsePublishProblemTarget = PublishProblem
     <$> argument auto
         (help "the number of the problem for which to publish the explanation"
         <> metavar "PROBLEM")
+
+parseStatistics :: ParserInfo Command
+parseStatistics = info parser modifier
+  where
+    parser = Statistics <$> parseStatisticsOptions
+    modifier = fullDesc
+            <> progDesc "Get statistics about an eden repository"
+
+parseStatisticsOptions :: Parser StatisticsOptions
+parseStatisticsOptions = pure StatisticsOptions
+
+problemCompleter :: Completer
+problemCompleter = listIOCompleter problemStrs
+  where
+    problemStrs = do
+        (eea, _) <- runEden problemDirs (defaultGlobalOptions, ())
+        case eea of
+            Left err    -> error $ "Something went wrong figuring out which problems you've tried to solve: " ++ err
+            Right probs -> return probs
+
+    problemDirs = do
+        ps <- problems
+        mapM problemDir ps
+
