@@ -10,12 +10,29 @@ import           Utils
 
 
 build :: Target -> EdenBuild ()
-build TargetAll = notImplementedYet
-build TargetAllLibraries = notImplementedYet
-build (TargetLibrary l) = buildLib l
-build TargetAllProblems = notImplementedYet
-build (TargetProblem p) = notImplementedYet
-build (TargetSolution p l) = buildSolution p l
+build TargetAll             = buildAll
+build TargetAllLibraries    = buildLibraries
+build (TargetLibrary l)     = buildLibrary l
+build TargetAllProblems     = buildProblems
+build (TargetProblem p)     = buildProblem p
+build (TargetSolution p l)  = buildSolution p l
+
+buildAll :: EdenBuild ()
+buildAll = do
+    buildLibraries
+    buildProblems
+
+buildLibraries :: EdenBuild ()
+buildLibraries = do
+    allLibraries <- libraries
+    mapM_ buildLibrary allLibraries
+
+buildLibrary :: Language -> EdenBuild ()
+buildLibrary l = do
+    md <- libraryDir l
+    mf <- libMakefilePath l
+
+    make md mf Nothing
 
 buildSolution :: Problem -> Language -> EdenBuild ()
 buildSolution p l = do
@@ -29,12 +46,18 @@ buildSolution p l = do
             Just f  -> return f
     make md mf bmr
 
-buildLib :: Language -> EdenBuild ()
-buildLib l = do
-    md <- libraryDir l
-    mf <- libMakefilePath l
+buildProblems :: EdenBuild ()
+buildProblems = do
+    allProblems <- problems
+    mapM_ buildProblem allProblems
 
-    make md mf Nothing
+buildProblem :: Problem -> EdenBuild ()
+buildProblem p = do
+    allSolutions <- solutions p
+    mapM_ (buildSolution p) allSolutions
+
+
+--[ Building in general ]--
 
 buildFirst :: EdenBuild a -> Eden c a
 buildFirst builder = do

@@ -7,11 +7,11 @@ import           Solutions
 import           Types
 
 test :: Target -> EdenTest ()
-test TargetAll = testAll
-test TargetAllLibraries = testLibraries
-test (TargetLibrary l) = testLibrary l
-test TargetAllProblems = testProblems
-test (TargetProblem p) = testProblem p
+test TargetAll            = testAll
+test TargetAllLibraries   = testLibraries
+test (TargetLibrary l)    = testLibrary l
+test TargetAllProblems    = testProblems
+test (TargetProblem p)    = testProblem p
 test (TargetSolution p l) = testSolution p l
 
 testAll :: EdenTest ()
@@ -26,7 +26,7 @@ testLibraries = do
 
 testLibrary :: Language -> EdenTest ()
 testLibrary l = do
-    defaultBuild $ buildLib l
+    defaultBuild $ buildLibrary l
 
     md <- testsDir l
     mf <- testMakefilePath l
@@ -46,7 +46,7 @@ testProblem p = do
 
 testSolution :: Problem -> Language -> EdenTest ()
 testSolution p l = do
-    defaultBuild $ buildLib l
+    defaultBuild $ buildLibrary l
     defaultBuild $ build $ TargetSolution p l
 
     md <- solutionDir p l
