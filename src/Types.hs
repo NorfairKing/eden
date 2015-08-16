@@ -4,11 +4,14 @@ module Types
     , module Control.Monad.Except
     , module Control.Monad.IO.Class
     , module Control.Monad.Reader
+    , module Control.Monad.Writer
     ) where
 
-import           Control.Monad.Except   (ExceptT, catchError, throwError)
+import           Control.Monad.Except   (ExceptT, MonadError, catchError,
+                                         throwError)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (ReaderT)
+import           Control.Monad.Writer   (WriterT, tell)
 
 
 
@@ -101,10 +104,27 @@ data Target = TargetAll
             | TargetSolution Problem Language
     deriving Show
 
+data MakeTargets = MakeTargets {
+        make_targets :: [MakeTarget]
+    }
+    deriving Show
+
+instance Monoid MakeTargets where
+    mempty  = MakeTargets { make_targets = [] }
+    mappend mt1 mt2 = MakeTargets {
+            make_targets = make_targets mt1 ++ make_targets mt2
+        }
+
+data MakeTarget = MakeTarget {
+        make_dir  :: FilePath
+    ,   make_file :: FilePath
+    ,   make_rule :: Maybe String
+    }
+    deriving Show
 
 --[ Monads ]--
 
-type Eden c = ExceptT EdenError (ReaderT (GlobalOptions, c) IO)
+type Eden c = ExceptT EdenError ( WriterT MakeTargets (ReaderT (GlobalOptions, c) IO))
 
 type EdenError = String
 

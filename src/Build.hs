@@ -38,10 +38,12 @@ buildLib l = do
 defaultBuild :: EdenBuild a -> Eden c a
 defaultBuild builder = do
     o <- getGlobal
-    eea <- liftIO $ runEden builder (o, defaultBuildOption)
+    (eea, mts) <- liftIO $ runEden builder (o, defaultBuildOption)
     case eea of
         Left err -> throwError err
-        Right a  -> return a
+        Right a  -> do
+            tell mts
+            return a
 
 defaultBuildOption :: BuildOptions
 defaultBuildOption = BuildOptions {

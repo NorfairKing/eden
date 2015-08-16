@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 module Utils where
 
 import           System.Directory (doesDirectoryExist, doesFileExist)
@@ -75,5 +77,12 @@ make dir makefile mrule = do
                     ]
             runRaw cmd
 
-notImplementedYet :: Eden c ()
+notImplementedYet :: (Monad m, MonadError String m) => m ()
 notImplementedYet = throwError "This feature is not implemented yet."
+
+makeTargets :: MakeTargets -> IO ()
+makeTargets mts = mapM_ makeSingleTarget $ make_targets mts
+
+makeSingleTarget :: MakeTarget -> IO ()
+makeSingleTarget mt = return ()
+

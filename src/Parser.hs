@@ -248,7 +248,7 @@ problemCompleter :: Completer
 problemCompleter = listIOCompleter problemStrs
   where
     problemStrs = do
-        eea <- runEden problemDirs (defaultGlobalOptions, ())
+        (eea, _) <- runEden problemDirs (defaultGlobalOptions, ())
         case eea of
             Left err    -> error $ "Something went wrong figuring out which problems you've tried to solve: " ++ err
             Right probs -> return probs

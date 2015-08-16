@@ -2,15 +2,16 @@ module Eden where
 
 import           Control.Monad.Except (ExceptT, runExceptT, throwError)
 import           Control.Monad.Reader (ReaderT, ask, asks, runReaderT)
+import           Control.Monad.Writer (WriterT, runWriterT, tell)
 
 import           Paths
 import           Types
 
-runCheckedEden :: Eden c a -> (GlobalOptions, c) -> IO (Either EdenError a)
+runCheckedEden :: Eden c a -> (GlobalOptions, c) -> IO (Either EdenError a, MakeTargets)
 runCheckedEden func = runEden (checkEden >> func)
 
-runEden :: Eden c a -> (GlobalOptions, c) -> IO (Either EdenError a)
-runEden func = runReaderT (runExceptT func)
+runEden :: Eden c a -> (GlobalOptions, c) -> IO (Either EdenError a, MakeTargets)
+runEden func = runReaderT (runWriterT (runExceptT func))
 
 getOptions :: Eden c c
 getOptions = fmap snd ask

@@ -10,6 +10,7 @@ import           Run
 import           Statistics
 import           Test
 import           Types
+import           Utils
 
 
 main :: IO ()
@@ -19,7 +20,7 @@ main = do
     let g = opt_global options
         c = opt_command options
 
-    ee <- case c of
+    (ee, mts) <- case c of
         Init o          -> runEden        initE         (g, o)
         Generate o gt   -> runCheckedEden (generate gt) (g, o)
         Build o t       -> runCheckedEden (build t)     (g, o)
@@ -29,4 +30,4 @@ main = do
         Statistics o    -> runCheckedEden statistics    (g, o)
     case ee of
         Left error  -> putStrLn error
-        Right ()    -> return ()
+        Right ()    -> makeTargets mts
