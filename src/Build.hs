@@ -1,6 +1,7 @@
 module Build where
 
 import           Eden
+import           Make
 import           Paths
 import           Solutions
 import           Types
@@ -34,6 +35,16 @@ buildLib l = do
     mf <- libMakefilePath l
 
     make md mf Nothing
+
+buildFirst :: EdenBuild a -> Eden c a
+buildFirst builder = do
+    o <- getGlobal
+    (eea, mts) <- liftIO $ runEden builder (o, defaultBuildOption)
+    case eea of
+        Left err -> throwError err
+        Right a  -> do
+            makeTargetsFirst mts
+            return a
 
 defaultBuild :: EdenBuild a -> Eden c a
 defaultBuild builder = do

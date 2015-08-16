@@ -1,13 +1,10 @@
 module Test where
 
-import           Paths
-
 import           Build
 import           Constants
-import           Eden
+import           Make
 import           Solutions
 import           Types
-import           Utils
 
 test :: Target -> EdenTest ()
 test TargetAll = testAll

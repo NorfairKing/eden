@@ -8,10 +8,11 @@ module Types
     ) where
 
 import           Control.Monad.Except   (ExceptT, MonadError, catchError,
-                                         throwError)
+                                         runExceptT, throwError)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Control.Monad.Reader   (ReaderT)
-import           Control.Monad.Writer   (WriterT, tell)
+import           Control.Monad.Reader   (ReaderT, ask, asks, runReaderT)
+import           Control.Monad.Writer   (WriterT, runWriterT, tell)
+
 
 
 
@@ -135,6 +136,8 @@ type EdenTest       = Eden TestOptions
 type EdenRun        = Eden RunOptions
 type EdenPublish    = Eden PublishOptions
 type EdenStatistics = Eden StatisticsOptions
+
+type EdenMake       = Eden ()
 
 
 --[ Euler Problems ]--

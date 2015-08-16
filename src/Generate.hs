@@ -1,16 +1,11 @@
 {-# LANGUAGE QuasiQuotes #-}
 module Generate where
 
-import           System.Directory          (createDirectoryIfMissing)
-import           System.FilePath.Posix     ((</>))
-import           System.IO                 (hFlush, stdout)
-import           Text.Heredoc
-
-import           Language.Haskell.TH.Quote
+import           System.Directory      (createDirectoryIfMissing)
+import           System.FilePath.Posix ((</>))
+import           System.IO             (hFlush, stdout)
 
 import           Constants
-import           Eden
-import           Paths
 import           Solutions
 import           TH
 import           Types

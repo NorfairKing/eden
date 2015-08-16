@@ -6,8 +6,6 @@ import           System.Directory      (doesFileExist, getDirectoryContents,
 import           System.FilePath.Posix (replaceExtension, takeExtension, (</>))
 
 import           Constants
-import           Eden
-import           Paths
 import           Solutions
 import           Types
 import           Utils

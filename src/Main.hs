@@ -4,6 +4,7 @@ import           Build
 import           Eden
 import           Generate
 import           Init
+import           Make
 import qualified Parser     (getOptions)
 import           Publish
 import           Run
@@ -29,5 +30,5 @@ main = do
         Publish o pt    -> runCheckedEden (publish pt)  (g, o)
         Statistics o    -> runCheckedEden statistics    (g, o)
     case ee of
-        Left error  -> putStrLn error
-        Right ()    -> makeTargets mts
+        Left err  -> error err
+        Right ()    -> runEdenMake (makeTargets mts) g

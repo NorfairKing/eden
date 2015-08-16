@@ -2,13 +2,10 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Utils where
 
-import           System.Directory (doesDirectoryExist, doesFileExist)
-import           System.Exit      (ExitCode (..))
-import           System.IO        (hGetContents)
-import           System.Process   (createProcess, readProcess,
-                                   runInteractiveCommand, shell, system,
-                                   waitForProcess)
-import           System.TimeIt    (timeItT)
+import           System.Exit    (ExitCode (..))
+import           System.IO      (hGetContents)
+import           System.Process (readProcess, runInteractiveCommand,
+                                 waitForProcess)
 
 import           Eden
 import           Types
@@ -27,7 +24,7 @@ runCommand str = liftIO $ readProcess bin args ""
 runRaw :: String -> Eden c ()
 runRaw cmd = do
     printIf (askGlobal opt_commands) cmd
-    (inh, outh, errh, ph) <- liftIO $ runInteractiveCommand cmd
+    (_, outh, errh, ph) <- liftIO $ runInteractiveCommand cmd
     ec <- liftIO $ waitForProcess ph
     case ec of
         ExitSuccess -> return ()
@@ -49,40 +46,6 @@ printIf bool str = do
     else return ()
 
 
-make :: FilePath     -- Make directory
-     -> FilePath     -- Make file
-     -> Maybe String -- Make rule
-     -> Eden c ()
-make dir makefile mrule = do
-
-    dirExists   <- liftIO $ doesDirectoryExist dir
-    fileExists <- liftIO $ doesFileExist makefile
-
-    if not dirExists
-    then throwError $ unwords ["Directory", dir, "does not exist."]
-    else do
-        if not fileExists
-        then throwError $ unwords ["Makefile", makefile, "does not exist."]
-        else do
-            let rulestr = case mrule of
-                        Nothing -> ""
-                        Just rule -> rule
-            let cmd = unwords $
-                    [
-                        "make"
-                    ,   "--directory"   , dir
-                    ,   "--file"        , makefile
-                    ,   "--jobs"
-                    ,   rulestr
-                    ]
-            runRaw cmd
-
 notImplementedYet :: (Monad m, MonadError String m) => m ()
 notImplementedYet = throwError "This feature is not implemented yet."
-
-makeTargets :: MakeTargets -> IO ()
-makeTargets mts = mapM_ makeSingleTarget $ make_targets mts
-
-makeSingleTarget :: MakeTarget -> IO ()
-makeSingleTarget mt = return ()
 

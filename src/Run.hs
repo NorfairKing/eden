@@ -1,23 +1,19 @@
 module Run where
 
-import           Text.Printf           (printf)
-
 import           System.Directory      (doesFileExist)
 import           System.FilePath.Posix ((</>))
 
-import           Constants
 import           Eden
-import           Paths
 import           Solutions
 import           Types
 import           Utils
 
 run :: Target -> EdenRun ()
-run TargetAll = notImplementedYet
-run TargetAllLibraries = notImplementedYet
-run TargetAllProblems = notImplementedYet
-run (TargetProblem p) = notImplementedYet
-run (TargetSolution p l) = do
+run TargetAll             = notImplementedYet
+run TargetAllLibraries    = notImplementedYet
+run TargetAllProblems     = notImplementedYet
+run (TargetProblem _)     = notImplementedYet
+run (TargetSolution p l)  = do
     md <- solutionDir p l
     bin <- askEden run_binary
     inp <- askEden run_input

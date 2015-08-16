@@ -52,7 +52,6 @@ allSolutions = do
 
 languages :: Eden c [Language]
 languages = do
-    probs <- problems
     allSols <- allSolutions
     return $ nub allSols
 
@@ -152,7 +151,7 @@ padN m n = replicate (m - len) '0' ++ show n
   where len = length $ show n
 
 
-
+realDir :: FilePath -> Bool
 realDir d | d == "."            = False
           | d == ".."           = False
           | hasExtension d      = False
