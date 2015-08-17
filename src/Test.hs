@@ -48,8 +48,8 @@ testProblem p = do
 
 testSolution :: Problem -> Language -> EdenTest ()
 testSolution p l = do
-    defaultBuild $ buildLibrary l
-    defaultBuild $ build $ TargetSolution p l
+    buildFirst $ buildLibrary l
+    buildFirst $ build $ TargetSolution p l
 
     md <- solutionDir p l
     mf <- makefilePath l
