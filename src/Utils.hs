@@ -60,3 +60,8 @@ realDir d | d == "."            = False
           | d == ".."           = False
           | hasExtension d      = False
           | otherwise           = True
+
+readFromFile :: Read a => FilePath -> Eden c a
+readFromFile fp = do
+    str <- liftIO $ readFile fp
+    return $ read str

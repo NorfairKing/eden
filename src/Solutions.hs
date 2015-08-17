@@ -121,6 +121,11 @@ defaultInputFilePath p = do
     dir <- problemDir p
     return $ dir </> defaultInputFileName
 
+defaultOutputFilePath :: Problem -> Eden c FilePath
+defaultOutputFilePath p = do
+    dir <- problemDir p
+    return $ dir </> defaultOutputFileName
+
 
 --[ Publish ]--
 

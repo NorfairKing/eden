@@ -3,8 +3,10 @@ module Test where
 import           Build
 import           Constants
 import           Make
+import           Run
 import           Solutions
 import           Types
+import           Utils
 
 test :: Target -> EdenTest ()
 test TargetAll            = testAll
@@ -54,3 +56,14 @@ testSolution p l = do
     let rule = Just defaultTestRuleName
 
     make md mf rule
+
+    actual <- defaultRun (runSolution p l)
+    dof <- defaultOutputFilePath p
+    expected <- readFromFile dof
+
+    let same = ["Test:", problemDirName p, padNWith 8 ' ' l ++ ":"]
+    if actual /= expected
+    then          throwError $ unwords $ same ++ ["Fail,", "Expected:", show expected, "Actual:", show actual]
+    else liftIO $ putStrLn   $ unwords $ same ++ ["Success."]
+
+

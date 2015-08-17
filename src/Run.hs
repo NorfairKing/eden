@@ -3,6 +3,7 @@ module Run where
 import           System.Directory      (doesFileExist)
 import           System.FilePath.Posix ((</>))
 
+import           Constants
 import           Eden
 import           Solutions
 import           Types
@@ -13,7 +14,7 @@ run TargetAll             = runAll
 run TargetAllLibraries    = throwError "What did you think this would do? It doesn't make any sense."
 run TargetAllProblems     = runAllProblems
 run (TargetProblem p)     = runProblem p
-run (TargetSolution p l)  = runSolution p l
+run (TargetSolution p l)  = runSolution p l >> return ()
 
 runAll :: EdenRun ()
 runAll = runAllProblems
@@ -28,7 +29,7 @@ runProblem p = do
     allSolutions <- solutions p
     mapM_ (runSolution p) allSolutions
 
-runSolution :: Problem -> Language -> EdenRun ()
+runSolution :: Problem -> Language -> EdenRun Int
 runSolution p l = do
     md <- solutionDir p l
     bin <- askEden run_binary
@@ -48,4 +49,20 @@ runSolution p l = do
     result <- case minput of
         Nothing  -> runCommand cmd
         Just inf -> runCommandWithInput cmd inf
-    liftIO $ putStr $ unwords [problemDirName p, padNWith 8 ' ' l ++ ":", result]
+    liftIO $ putStr $ unwords ["Run: ", problemDirName p, padNWith 8 ' ' l ++ ":", result]
+    return $ read result
+
+
+defaultRun :: EdenRun a -> Eden c a
+defaultRun runner = do
+    o <- getGlobal
+    (eea, mts) <- liftIO $ runEden runner (o, defaultRunOptions)
+    case eea of
+        Left err -> throwError err
+        Right a  -> return a
+
+defaultRunOptions :: RunOptions
+defaultRunOptions = RunOptions {
+      run_input  = Nothing
+    , run_binary = defaultExecutable
+    }

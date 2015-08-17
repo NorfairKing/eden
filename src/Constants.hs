@@ -35,6 +35,9 @@ defaultExecutable = "solution.bin"
 defaultInputFileName :: String
 defaultInputFileName = "input.txt"
 
+defaultOutputFileName :: String
+defaultOutputFileName = "output.txt"
+
 defaultTestSuiteName :: String
 defaultTestSuiteName = "testsuite.bin"
 
