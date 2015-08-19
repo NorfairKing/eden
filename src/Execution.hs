@@ -2,6 +2,8 @@ module Execution where
 
 import           System.Directory (doesDirectoryExist, doesFileExist)
 
+import           Data.List        (delete, find)
+
 import           Constants
 import           Eden
 import           Solutions
@@ -10,8 +12,8 @@ import           Utils
 
 executeForrest :: ExecutionForest -> EdenMake ()
 executeForrest ef = do
-    rf <- reduceForrest ef
-    mapM_ executeExecutionTarget $ execution_targets ef
+    rf <- reduceForest ef
+    mapM_ executeExecutionTarget $ execution_targets rf
 
 executeExecutionTarget :: ExecutionTarget -> EdenMake ()
 executeExecutionTarget et = do
@@ -21,8 +23,31 @@ executeExecutionTarget et = do
       TestRunExecution rt -> doTestExecution rt
     mapM_ executeExecutionTarget $ execution_dependants et
 
-reduceForrest :: ExecutionForest -> EdenMake ExecutionForest
-reduceForrest = return
+reduceForest :: ExecutionForest -> EdenMake ExecutionForest
+reduceForest ef = do
+      rd <- doReduction ef
+      if ef == rd
+      then return ef
+      else reduceForest rd
+  where
+    ts = execution_targets ef
+    doReduction :: ExecutionForest -> EdenMake ExecutionForest
+    doReduction ef = case find sameExecution (ets `x` ets) of
+                        Nothing -> return ef
+                        Just (t1, t2) -> do
+                            let sameTarget = ExecutionTarget {
+                                  execution = execution t1
+                                , execution_dependants = execution_dependants t1 ++ execution_dependants t2
+                              }
+                            let newTargets = (++ [sameTarget]) $ delete t1 $ delete t2 ets
+                            return $ ExecutionForest { execution_targets = newTargets }
+      where ets = execution_targets ef
+    sameExecution :: (ExecutionTarget, ExecutionTarget) -> Bool
+    sameExecution (et1, et2) = execution et1 == execution et2
+
+
+x :: Eq a => [a] -> [a] -> [(a,a)]
+x as bs = [(a,b) | a <- as, b <- bs, a /= b]
 
 doMake :: MakeTarget -> EdenMake ()
 doMake mt = do
