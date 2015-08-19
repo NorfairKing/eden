@@ -2,20 +2,17 @@ module Build where
 
 import           Eden
 import           Make
-import           Paths
+import           Schedule
 import           Solutions
 import           Types
-import           Utils
-
-
 
 build :: Target -> EdenBuild ()
 build TargetAll             = buildAll
 build TargetAllLibraries    = buildLibraries
-build (TargetLibrary l)     = buildLibrary l
+build (TargetLibrary l)     = buildSingleLibrary l
 build TargetAllProblems     = buildProblems
 build (TargetProblem p)     = buildProblem p
-build (TargetSolution p l)  = buildSolution p l
+build (TargetSolution p l)  = buildSingleSolution p l
 
 buildAll :: EdenBuild ()
 buildAll = do
@@ -25,13 +22,16 @@ buildAll = do
 buildLibraries :: EdenBuild ()
 buildLibraries = do
     allLibraries <- libraries
-    mapM_ buildLibrary allLibraries
+    mapM_ buildSingleLibrary allLibraries
 
-buildLibrary :: Language -> EdenBuild ()
+buildSingleLibrary :: Language -> EdenBuild ()
+buildSingleLibrary l = buildLibrary l >>= schedule
+
+buildLibrary :: Language -> Eden c ExecutionTarget
 buildLibrary l = do
     md <- libraryDir l
     mf <- libMakefilePath l
-    make md mf Nothing
+    return $ make md mf Nothing
 
 buildProblems :: EdenBuild ()
 buildProblems = do
@@ -41,44 +41,25 @@ buildProblems = do
 buildProblem :: Problem -> EdenBuild ()
 buildProblem p = do
     allSolutions <- solutions p
-    mapM_ (buildSolution p) allSolutions
+    mapM_ (buildSingleSolution p) allSolutions
 
-buildSolution :: Problem -> Language -> EdenBuild ()
-buildSolution p l = do
-    build (TargetLibrary l) `catchError` (\e -> return ())
-
-    md <- solutionDir p l
+buildSingleSolution :: Problem -> Language -> EdenBuild ()
+buildSingleSolution p l = do
     bmf <- askEden build_makefile
     bmr <- askEden build_makerule
+    buildSolution p l bmf bmr >>= schedule
+
+buildSolution :: Problem
+              -> Language
+              -> Maybe FilePath -- makefile
+              -> Maybe String -- make rule
+              -> Eden c ExecutionTarget
+buildSolution p l bmf bmr = do
+    btl <- buildLibrary l
+
+    md <- solutionDir p l
     mf <- case bmf of
             Nothing -> makefilePath l
             Just f  -> return f
-    make md mf bmr
-
---[ Building in general ]--
-
-buildFirst :: EdenBuild a -> Eden c a
-buildFirst builder = do
-    o <- getGlobal
-    (eea, mts) <- liftIO $ runEden builder (o, defaultBuildOption)
-    case eea of
-        Left err -> throwError err
-        Right a  -> do
-            makeTargetsFirst mts
-            return a
-
-defaultBuild :: EdenBuild a -> Eden c a
-defaultBuild builder = do
-    o <- getGlobal
-    (eea, mts) <- liftIO $ runEden builder (o, defaultBuildOption)
-    case eea of
-        Left err -> throwError err
-        Right a  -> do
-            tell mts
-            return a
-
-defaultBuildOption :: BuildOptions
-defaultBuildOption = BuildOptions {
-        build_makefile = Nothing
-      , build_makerule = Nothing
-    }
+    let mt = make md mf bmr
+    return $ mt `after` btl

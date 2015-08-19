@@ -3,8 +3,6 @@ module Parser where
 import           Options.Applicative
 
 import           Constants
-import           Eden
-import           Solutions
 import           Types
 
 
@@ -157,7 +155,7 @@ parseRunOptions = RunOptions
         (help "the binary to run"
         <> long "binary"
         <> short 'b'
-        <> value defaultExecutable
+        <> value defaultExecutableName
         <> metavar "BINARY")
 
 parseTarget :: Parser Target

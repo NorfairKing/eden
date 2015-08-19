@@ -3,10 +3,10 @@ module Eden where
 import           Paths
 import           Types
 
-runCheckedEden :: Eden c a -> (GlobalOptions, c) -> IO (Either EdenError a, MakeTargets)
+runCheckedEden :: Eden c a -> (GlobalOptions, c) -> IO (Either EdenError a, ExecutionForest)
 runCheckedEden func = runEden (checkEden >> func)
 
-runEden :: Eden c a -> (GlobalOptions, c) -> IO (Either EdenError a, MakeTargets)
+runEden :: Eden c a -> (GlobalOptions, c) -> IO (Either EdenError a, ExecutionForest)
 runEden func = runReaderT (runWriterT (runExceptT func))
 
 runEdenMake :: EdenMake a -> GlobalOptions -> IO a

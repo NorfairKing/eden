@@ -29,8 +29,8 @@ publishingDirName = "writeup"
 defaultMakefileName :: String
 defaultMakefileName = "makefile"
 
-defaultExecutable :: String
-defaultExecutable = "solution.bin"
+defaultExecutableName :: String
+defaultExecutableName = "solution.bin"
 
 defaultInputFileName :: String
 defaultInputFileName = "input.txt"

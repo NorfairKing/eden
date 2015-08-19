@@ -3,8 +3,9 @@ module Run where
 import           System.Directory      (doesFileExist)
 import           System.FilePath.Posix ((</>))
 
-import           Constants
+import           Build
 import           Eden
+import           Schedule
 import           Solutions
 import           Types
 import           Utils
@@ -12,9 +13,10 @@ import           Utils
 run :: Target -> EdenRun ()
 run TargetAll             = runAll
 run TargetAllLibraries    = throwError "What did you think this would do? It doesn't make any sense."
+run (TargetLibrary _)     = throwError "What did you think this would do? It doesn't make any sense."
 run TargetAllProblems     = runAllProblems
 run (TargetProblem p)     = runProblem p
-run (TargetSolution p l)  = runSolution p l >> return ()
+run (TargetSolution p l)  = runSingleSolution p l
 
 runAll :: EdenRun ()
 runAll = runAllProblems
@@ -27,42 +29,33 @@ runAllProblems = do
 runProblem :: Problem -> EdenRun ()
 runProblem p = do
     allSolutions <- solutions p
-    mapM_ (runSolution p) allSolutions
+    mapM_ (runSingleSolution p) allSolutions
 
-runSolution :: Problem -> Language -> EdenRun Int
-runSolution p l = do
-    md <- solutionDir p l
+runSingleSolution :: Problem -> Language -> EdenRun ()
+runSingleSolution p l = do
     bin <- askEden run_binary
     inp <- askEden run_input
+    runSolution p l bin inp >>= schedule
+
+runSolution :: Problem
+              -> Language
+              -> FilePath -- Binary
+              -> Maybe FilePath -- Input
+              -> Eden c ExecutionTarget
+runSolution p l bin inp = do
+    bst <- buildSolution p l Nothing Nothing
+
+    md <- solutionDir p l
     let cmd = md </> bin
 
-    minput <- case inp of
-                    Just rti -> return $ Just rti
-                    Nothing  -> do
-                        dif <- defaultInputFilePath p
-                        exists <- liftIO $ doesFileExist dif
-                        if exists
-                        then return $ Just dif
-                        else return $ Nothing
-
-    printIf (askGlobal opt_commands) cmd
-    result <- case minput of
-        Nothing  -> runCommand cmd
-        Just inf -> runCommandWithInput cmd inf
-    liftIO $ putStr $ unwords ["Run: ", problemDirName p, padNWith 8 ' ' l ++ ":", result]
-    return $ read result
-
-
-defaultRun :: EdenRun a -> Eden c a
-defaultRun runner = do
-    o <- getGlobal
-    (eea, mts) <- liftIO $ runEden runner (o, defaultRunOptions)
-    case eea of
-        Left err -> throwError err
-        Right a  -> return a
-
-defaultRunOptions :: RunOptions
-defaultRunOptions = RunOptions {
-      run_input  = Nothing
-    , run_binary = defaultExecutable
-    }
+    minput <- actualSolutionInput p l inp
+    let rst = ExecutionTarget {
+          execution = RunExecution RunTarget {
+              run_target_problem = p
+            , run_target_language = l
+            , run_target_bin = cmd
+            , run_target_input = minput
+            }
+        , execution_dependants = []
+      }
+    return $ rst `after` bst

@@ -2,6 +2,7 @@ module Main where
 
 import           Build
 import           Eden
+import           Execution
 import           Generate
 import           Init
 import           Make
@@ -31,4 +32,4 @@ main = do
         Statistics o    -> runCheckedEden statistics    (g, o)
     case ee of
         Left err  -> error err
-        Right ()    -> runEdenMake (makeTargets mts) g
+        Right ()    -> runEdenMake (executeForrest mts) g

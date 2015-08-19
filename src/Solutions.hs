@@ -56,6 +56,16 @@ languages = do
     allSols <- allSolutions
     return $ nub allSols
 
+actualSolutionInput :: Problem -> Language -> Maybe FilePath -> Eden c (Maybe FilePath)
+actualSolutionInput p l inp = case inp of
+                            Just rti -> return $ Just rti
+                            Nothing  -> do
+                                dif <- defaultInputFilePath p
+                                exists <- liftIO $ doesFileExist dif
+                                if exists
+                                then return $ Just dif
+                                else return $ Nothing
+
 --[ Libraries ]--
 
 libDir :: Eden c FilePath
@@ -115,6 +125,11 @@ makefilePath l = do
 
 
 --[ Run ]--
+
+defaultSolutionBinary :: Problem -> Language -> Eden c FilePath
+defaultSolutionBinary p l = do
+    dir <- solutionDir p l
+    return $ dir </> defaultExecutableName
 
 defaultInputFilePath :: Problem -> Eden c FilePath
 defaultInputFilePath p = do

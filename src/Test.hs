@@ -4,6 +4,7 @@ import           Build
 import           Constants
 import           Make
 import           Run
+import           Schedule
 import           Solutions
 import           Types
 import           Utils
@@ -11,10 +12,10 @@ import           Utils
 test :: Target -> EdenTest ()
 test TargetAll            = testAll
 test TargetAllLibraries   = testLibraries
-test (TargetLibrary l)    = testLibrary l
+test (TargetLibrary l)    = testSingleLibrary l
 test TargetAllProblems    = testProblems
 test (TargetProblem p)    = testProblem p
-test (TargetSolution p l) = testSolution p l
+test (TargetSolution p l) = testSingleSolution p l
 
 testAll :: EdenTest ()
 testAll = do
@@ -24,17 +25,21 @@ testAll = do
 testLibraries :: EdenTest ()
 testLibraries = do
     allLibraries <- libraries
-    mapM_ testLibrary allLibraries
+    mapM_ testSingleLibrary allLibraries
 
-testLibrary :: Language -> EdenTest ()
+testSingleLibrary :: Language -> EdenTest ()
+testSingleLibrary l = testLibrary l >>= schedule
+
+testLibrary :: Language -> Eden c ExecutionTarget
 testLibrary l = do
-    defaultBuild $ buildLibrary l
+    blt <- buildLibrary l
 
     md <- testsDir l
     mf <- testMakefilePath l
     let rule = Just defaultTestRuleName
+    let mt =  make md mf rule
 
-    make md mf rule
+    return $ mt `after` blt
 
 testProblems :: EdenTest ()
 testProblems = do
@@ -44,26 +49,32 @@ testProblems = do
 testProblem :: Problem -> EdenTest ()
 testProblem p = do
     allSolutions <- solutions p
-    mapM_ (testSolution p) allSolutions
+    mapM_ (testSingleSolution p) allSolutions
 
-testSolution :: Problem -> Language -> EdenTest ()
+testSingleSolution :: Problem -> Language -> EdenTest ()
+testSingleSolution p l = testSolution p l >>= schedule
+
+testSolution :: Problem -> Language -> Eden c ExecutionTarget
 testSolution p l = do
-    buildFirst $ buildLibrary l
-    buildFirst $ build $ TargetSolution p l
+    btl <- buildLibrary l
+    bts <- buildSolution p l Nothing Nothing
 
     md <- solutionDir p l
     mf <- makefilePath l
     let rule = Just defaultTestRuleName
+    let btm = make md mf rule
 
-    make md mf rule
-
-    actual <- defaultRun (runSolution p l)
+    dsb <- defaultSolutionBinary p l
     dof <- defaultOutputFilePath p
-    expected <- readFromFile dof
-
-    let same = ["Test:", problemDirName p, padNWith 8 ' ' l ++ ":"]
-    if actual /= expected
-    then          throwError $ unwords $ same ++ ["Fail,", "Expected:", show expected, "Actual:", show actual]
-    else liftIO $ putStrLn   $ unwords $ same ++ ["Success."]
-
-
+    minput <- actualSolutionInput p l Nothing
+    let tet = ExecutionTarget {
+        execution = TestRunExecution TestTarget {
+            test_target_problem  = p
+          , test_target_language = l
+          , test_target_bin      = dsb
+          , test_target_input    = minput
+          , test_target_output   = dof
+          }
+      , execution_dependants = []
+      }
+    return $ inOrder [btl, bts, btm, tet]
