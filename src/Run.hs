@@ -1,6 +1,5 @@
 module Run where
 
-import           System.Directory      (doesFileExist)
 import           System.FilePath.Posix ((</>))
 
 import           Build
@@ -8,7 +7,6 @@ import           Eden
 import           Schedule
 import           Solutions
 import           Types
-import           Utils
 
 run :: Target -> EdenRun ()
 run TargetAll             = runAll

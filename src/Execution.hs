@@ -10,6 +10,7 @@ import           Data.List                (nub)
 import           Data.Map                 (Map, fromList, lookup, toList,
                                            update)
 import           Data.Maybe               (fromJust)
+import           Data.Tree                (Forest, Tree (..), levels)
 import           Prelude                  hiding (lookup)
 
 import           Eden
@@ -28,9 +29,7 @@ executeForest :: ExecutionForest -> EdenMake ()
 executeForest = mapM_ executeTree
 
 executeTree :: ExecutionTree -> EdenMake ()
-executeTree et = do
-  execute $ rootLabel et
-  executeForest $ subForest et
+executeTree et = mapM_ (mapM_ execute) . reverse $ levels et
 
 execute :: Execution -> EdenMake ()
 execute (MakeExecution mt)    = doMake mt
@@ -38,11 +37,23 @@ execute (RunExecution rt)     = doRunExecution rt >> return ()
 execute (TestRunExecution rt) = doTestExecution rt
 
 toForest :: ExecutionDependencyGraph -> ExecutionForest
-toForest edg = map (fmap mapBack) . graphToForest $ graph
+toForest edg = map (fmap mapBack) $ graphToForest
   where
-    graphToForest :: Graph -> Forest Vertex
-    graphToForest g = dfs g roots
-      where roots = filter (\v -> null . thd3 $ vertexLookupFunction v) $ vertices g
+    graphToForest :: Forest Vertex
+    graphToForest = map buildBackwardsTreeFromVertex roots
+      where roots = filter (\v -> null . thd3 $ vertexLookupFunction v) $ vertices graph
+
+    buildBackwardsTreeFromVertex :: Vertex -> Tree Vertex
+    buildBackwardsTreeFromVertex v = Node {
+            rootLabel = v
+          , subForest = map buildBackwardsTreeFromVertex $ reachingV
+        }
+      where
+        reachingV :: [Vertex]
+        reachingV = filter reachesV $ vertices graph
+
+        reachesV :: Vertex -> Bool
+        reachesV w = v `elem` (thd3 $ vertexLookupFunction w)
 
     mapBack :: Vertex -> Execution
     mapBack e = fst3 $ vertexLookupFunction e
@@ -80,13 +91,14 @@ toForest edg = map (fmap mapBack) . graphToForest $ graph
     startingMap :: Map Execution [Execution]
     startingMap = fromList $ zip allExecutions $ repeat []
 
+    -- Map to dependencies: (a -> b) means b has to happen before a
     addAll :: ExecutionDependencyGraph -> Map Execution [Execution] -> Map Execution [Execution]
     addAll [] accMap                  = accMap
-    addAll ((Nothing, e2):es) accMap  = accMap
-    addAll ((Just e1, e2):es) accMap  = addAll es $ update fn e1 accMap
+    addAll ((Nothing, e2):es) accMap  = addAll es accMap
+    addAll ((Just bf, af):es) accMap  = addAll es $ update fn af accMap
       where
         fn :: [Execution] -> Maybe [Execution]
-        fn es = Just (e2:es)
+        fn es = Just (bf:es)
 
     allExecutions :: [Execution]
     allExecutions = nub $ concatMap go $ edg

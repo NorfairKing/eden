@@ -5,7 +5,6 @@ module Types
     , module Control.Monad.IO.Class
     , module Control.Monad.Reader
     , module Control.Monad.Writer
-    , module Data.Tree
     ) where
 
 import           Control.Monad.Except   (ExceptT, MonadError, catchError,
