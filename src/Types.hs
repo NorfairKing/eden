@@ -5,6 +5,7 @@ module Types
     , module Control.Monad.IO.Class
     , module Control.Monad.Reader
     , module Control.Monad.Writer
+    , module Data.Tree
     ) where
 
 import           Control.Monad.Except   (ExceptT, MonadError, catchError,
@@ -13,11 +14,10 @@ import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (ReaderT, ask, asks, runReaderT)
 import           Control.Monad.Writer   (WriterT, runWriterT, tell)
 
+import           Data.Tree              (Forest, Tree (..))
 import           GHC.Generics
 
 import           Data.Aeson             (ToJSON)
-
-import           Data.List              (nub)
 
 --[ Command line options ]--
 
@@ -111,34 +111,21 @@ data Target = TargetAll
             | TargetSolution Problem Language
     deriving Show
 
-data ExecutionForest = ExecutionForest {
-        execution_targets :: [ExecutionTarget]
-    } deriving (Show, Eq, Generic)
-instance ToJSON ExecutionForest
-
-instance Monoid ExecutionForest where
-    mempty  = ExecutionForest { execution_targets = [] }
-    mappend mt1 mt2 = ExecutionForest {
-            execution_targets = nub $ execution_targets mt1 ++ execution_targets mt2
-        }
-
-data ExecutionTarget = ExecutionTarget {
-      execution            :: Execution
-    , execution_dependants :: [ExecutionTarget]
-  } deriving (Show, Eq, Generic)
-instance ToJSON ExecutionTarget
+type ExecutionDependencyGraph = [(Maybe Execution, Execution)] -- Edges
+type ExecutionForest = Forest Execution
+type ExecutionTree = Tree Execution
 
 data Execution = MakeExecution MakeTarget
                | RunExecution RunTarget
                | TestRunExecution TestTarget
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Ord, Generic)
 instance ToJSON Execution
 
 data MakeTarget = MakeTarget {
       make_dir  :: FilePath
     , make_file :: FilePath
     , make_rule :: Maybe String
-  } deriving (Show, Eq, Generic)
+  } deriving (Show, Eq, Ord, Generic)
 instance ToJSON MakeTarget
 
 data TestTarget = TestTarget {
@@ -147,7 +134,7 @@ data TestTarget = TestTarget {
     , test_target_bin      :: FilePath
     , test_target_input    :: Maybe FilePath
     , test_target_output   :: FilePath
-  } deriving (Show, Eq, Generic)
+  } deriving (Show, Eq, Ord, Generic)
 instance ToJSON TestTarget
 
 data RunTarget = RunTarget {
@@ -155,12 +142,12 @@ data RunTarget = RunTarget {
     , run_target_language :: Language
     , run_target_bin      :: FilePath
     , run_target_input    :: Maybe FilePath
-  } deriving (Show, Eq, Generic)
+  } deriving (Show, Eq, Ord, Generic)
 instance ToJSON RunTarget
 
 --[ Monads ]--
 
-type Eden c = ExceptT EdenError ( WriterT ExecutionForest (ReaderT (GlobalOptions, c) IO))
+type Eden c = ExceptT EdenError ( WriterT ExecutionDependencyGraph (ReaderT (GlobalOptions, c) IO))
 
 type EdenError = String
 

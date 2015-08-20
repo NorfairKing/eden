@@ -22,7 +22,7 @@ main = do
     let g = opt_global options
         c = opt_command options
 
-    (ee, mts) <- case c of
+    (ee, eg) <- case c of
         Init o          -> runEden        initE         (g, o)
         Generate o gt   -> runCheckedEden (generate gt) (g, o)
         Build o t       -> runCheckedEden (build t)     (g, o)
@@ -32,4 +32,4 @@ main = do
         Statistics o    -> runCheckedEden statistics    (g, o)
     case ee of
         Left err  -> error err
-        Right ()    -> runEdenMake (executeForrest mts) g
+        Right ()    -> runEdenMake (executeGraph eg) g

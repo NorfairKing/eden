@@ -41,21 +41,18 @@ runSolution :: Problem
               -> Language
               -> FilePath -- Binary
               -> Maybe FilePath -- Input
-              -> Eden c ExecutionTarget
+              -> Eden c [Execution]
 runSolution p l bin inp = do
     bst <- buildSolution p l Nothing Nothing
 
     md <- solutionDir p l
     let cmd = md </> bin
 
-    minput <- actualSolutionInput p l inp
-    let rst = ExecutionTarget {
-          execution = RunExecution RunTarget {
+    minput <- actualSolutionInput p inp
+    let rst = RunExecution RunTarget {
               run_target_problem = p
             , run_target_language = l
             , run_target_bin = cmd
             , run_target_input = minput
             }
-        , execution_dependants = []
-      }
-    return $ bst `before` rst
+    return $ bst ++ [rst]

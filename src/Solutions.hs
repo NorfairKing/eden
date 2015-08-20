@@ -56,8 +56,8 @@ languages = do
     allSols <- allSolutions
     return $ nub allSols
 
-actualSolutionInput :: Problem -> Language -> Maybe FilePath -> Eden c (Maybe FilePath)
-actualSolutionInput p l inp = case inp of
+actualSolutionInput :: Problem -> Maybe FilePath -> Eden c (Maybe FilePath)
+actualSolutionInput p inp = case inp of
                             Just rti -> return $ Just rti
                             Nothing  -> do
                                 dif <- defaultInputFilePath p

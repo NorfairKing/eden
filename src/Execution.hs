@@ -4,79 +4,97 @@ import           Data.Aeson.Encode.Pretty (encodePretty)
 import qualified Data.ByteString.Lazy     as B
 import           System.Directory         (doesDirectoryExist, doesFileExist)
 
-import           Data.List                (delete, find)
+import           Data.Graph               (Graph, Vertex, dfs, graphFromEdges',
+                                           vertices)
+import           Data.List                (nub)
+import           Data.Map                 (Map, fromList, lookup, toList,
+                                           update)
+import           Data.Maybe               (fromJust)
+import           Prelude                  hiding (lookup)
 
-
-import           Constants
 import           Eden
 import           Solutions
 import           Types
 import           Utils
 
-executeForrest :: ExecutionForest -> EdenMake ()
-executeForrest ef = do
-    -- liftIO $ B.putStr $ encodePretty ef
-    newTargets <- reduceForest $ execution_targets ef
-    liftIO $ B.putStr $ encodePretty newTargets
-    mapM_ executeExecutionTarget newTargets
+executeGraph :: ExecutionDependencyGraph -> EdenMake ()
+executeGraph ef = do
+    liftIO $ B.putStr $ encodePretty ef
+    let forest = toForest ef
+    liftIO $ B.putStr $ encodePretty forest
+    executeForest forest
 
---reduceForest' = return
+executeForest :: ExecutionForest -> EdenMake ()
+executeForest = mapM_ executeTree
 
-executeExecutionTarget :: ExecutionTarget -> EdenMake ()
-executeExecutionTarget et = do
-    case execution et of
-      MakeExecution mt    -> doMake mt
-      RunExecution rt     -> doRunExecution rt >> return ()
-      TestRunExecution rt -> doTestExecution rt
-    mapM_ executeExecutionTarget $ execution_dependants et
+executeTree :: ExecutionTree -> EdenMake ()
+executeTree et = do
+  execute $ rootLabel et
+  executeForest $ subForest et
 
-reduceForest :: [ExecutionTarget] -> EdenMake [ExecutionTarget]
-reduceForest ts = do
-      rd <- doReduction ts
-      if ts == rd
-      then return ts
-      else reduceForest rd
+execute :: Execution -> EdenMake ()
+execute (MakeExecution mt)    = doMake mt
+execute (RunExecution rt)     = doRunExecution rt >> return ()
+execute (TestRunExecution rt) = doTestExecution rt
+
+toForest :: ExecutionDependencyGraph -> ExecutionForest
+toForest edg = map (fmap mapBack) . graphToForest $ graph
   where
-    doReduction :: [ExecutionTarget] -> EdenMake [ExecutionTarget]
-    doReduction [] = return []
-    doReduction ets = do
-        -- ets <- mapM easyReduction etss
-        case find sameExecution (ets `x` ets) of
-              Just (t1, t2) -> do -- combine bottom level targets
-                  let sameTarget = ExecutionTarget {
-                        execution = execution t1
-                      , execution_dependants = execution_dependants t1 ++ execution_dependants t2
-                    }
-                  let newTargets = (++ [sameTarget]) $ delete t1 $ delete t2 ets
-                  return newTargets
-              Nothing -> do -- go one level deper
-                  (flip mapM) ets $ \et -> do
-                      reduced <- doReduction $ execution_dependants et
-                      return $ ExecutionTarget {
-                          execution = execution et
-                        , execution_dependants = reduced
-                        }
-    sameExecution :: (ExecutionTarget, ExecutionTarget) -> Bool
-    sameExecution (et1, et2) = execution et1 == execution et2
-    easyReduction :: ExecutionTarget -> EdenMake ExecutionTarget
-    easyReduction et = do
-          newDependants <- (flip mapM) deps $ \eto -> do
-                            etor <- easyReduction eto
-                            if sameExecution (et, etor)
-                            then return $ execution_dependants etor --skip etor
-                            else return $ [etor]
-          return $ ExecutionTarget {
-                    execution = eet
-                  , execution_dependants = concat newDependants
-                }
+    graphToForest :: Graph -> Forest Vertex
+    graphToForest g = dfs g roots
+      where roots = filter (\v -> null . thd3 $ vertexLookupFunction v) $ vertices g
+
+    mapBack :: Vertex -> Execution
+    mapBack e = fst3 $ vertexLookupFunction e
+
+    graph :: Graph
+    graph = fst $ graphFromEdges' realGraph
+
+    vertexLookupFunction :: Vertex -> (Execution, Int, [Int])
+    vertexLookupFunction = snd $ graphFromEdges' realGraph
+
+    backwardsMap :: Map Int Execution
+    backwardsMap = fromList $ zip [1..] $ map fst dependencyList
+
+    realGraph :: [(Execution, Int, [Vertex])]
+    realGraph = toRealEdges dependencyList
+
+    toRealEdges :: [(Execution, [Execution])] -> [(Execution, Int, [Int])]
+    toRealEdges egs = map go egs
       where
-        eet = execution et
-        deps = execution_dependants et
+        go :: (Execution, [Execution]) -> (Execution, Int, [Int])
+        go (e, es) = (e, lo e, map lo es)
+
+        lo :: Execution -> Int
+        lo = fromJust . (flip lookup) executionsVertexMap
+
+        executionsVertexMap :: Map Execution Int
+        executionsVertexMap = fromList $ zip (map fst dependencyList) [1..]
+
+    dependencyList :: [(Execution, [Execution])]
+    dependencyList = toList dependencyMap
+
+    dependencyMap :: Map Execution [Execution]
+    dependencyMap = addAll edg startingMap
+
+    startingMap :: Map Execution [Execution]
+    startingMap = fromList $ zip allExecutions $ repeat []
+
+    addAll :: ExecutionDependencyGraph -> Map Execution [Execution] -> Map Execution [Execution]
+    addAll [] accMap                  = accMap
+    addAll ((Nothing, e2):es) accMap  = accMap
+    addAll ((Just e1, e2):es) accMap  = addAll es $ update fn e1 accMap
+      where
+        fn :: [Execution] -> Maybe [Execution]
+        fn es = Just (e2:es)
+
+    allExecutions :: [Execution]
+    allExecutions = nub $ concatMap go $ edg
+      where
+        go (Nothing, e)  = [e]
+        go (Just e1, e2) = [e1, e2]
 
 
-
-x :: Eq a => [a] -> [a] -> [(a,a)]
-x as bs = [(a,b) | a <- as, b <- bs, a /= b]
 
 doMake :: MakeTarget -> EdenMake ()
 doMake mt = do

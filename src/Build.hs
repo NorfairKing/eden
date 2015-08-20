@@ -27,11 +27,11 @@ buildLibraries = do
 buildSingleLibrary :: Language -> EdenBuild ()
 buildSingleLibrary l = buildLibrary l >>= schedule
 
-buildLibrary :: Language -> Eden c ExecutionTarget
+buildLibrary :: Language -> Eden c [Execution]
 buildLibrary l = do
     md <- libraryDir l
     mf <- libMakefilePath l
-    return $ make md mf Nothing
+    return $ [make md mf Nothing]
 
 buildProblems :: EdenBuild ()
 buildProblems = do
@@ -53,7 +53,7 @@ buildSolution :: Problem
               -> Language
               -> Maybe FilePath -- makefile
               -> Maybe String -- make rule
-              -> Eden c ExecutionTarget
+              -> Eden c [Execution]
 buildSolution p l bmf bmr = do
     btl <- buildLibrary l
 
@@ -62,4 +62,4 @@ buildSolution p l bmf bmr = do
             Nothing -> makefilePath l
             Just f  -> return f
     let mt = make md mf bmr
-    return $ btl `before` mt
+    return $ btl ++ [mt]
