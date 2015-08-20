@@ -39,7 +39,7 @@ testLibrary l = do
     let rule = Just defaultTestRuleName
     let mt =  make md mf rule
 
-    return $ mt `after` blt
+    return $ blt `before` mt
 
 testProblems :: EdenTest ()
 testProblems = do
@@ -57,6 +57,8 @@ testSingleSolution p l = testSolution p l >>= schedule
 testSolution :: Problem -> Language -> Eden c ExecutionTarget
 testSolution p l = do
     btl <- buildLibrary l
+    ttl <- testLibrary l
+
     bts <- buildSolution p l Nothing Nothing
 
     md <- solutionDir p l
@@ -77,4 +79,4 @@ testSolution p l = do
           }
       , execution_dependants = []
       }
-    return $ inOrder [btl, bts, btm, tet]
+    return $ inOrder [btl, ttl, bts, btm, tet]

@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Types
     ( module Types
     , module Control.Monad.Except
@@ -11,6 +12,10 @@ import           Control.Monad.Except   (ExceptT, MonadError, catchError,
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (ReaderT, ask, asks, runReaderT)
 import           Control.Monad.Writer   (WriterT, runWriterT, tell)
+
+import           GHC.Generics
+
+import           Data.Aeson             (ToJSON)
 
 import           Data.List              (nub)
 
@@ -108,7 +113,8 @@ data Target = TargetAll
 
 data ExecutionForest = ExecutionForest {
         execution_targets :: [ExecutionTarget]
-    } deriving (Show, Eq)
+    } deriving (Show, Eq, Generic)
+instance ToJSON ExecutionForest
 
 instance Monoid ExecutionForest where
     mempty  = ExecutionForest { execution_targets = [] }
@@ -119,18 +125,21 @@ instance Monoid ExecutionForest where
 data ExecutionTarget = ExecutionTarget {
       execution            :: Execution
     , execution_dependants :: [ExecutionTarget]
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Generic)
+instance ToJSON ExecutionTarget
 
 data Execution = MakeExecution MakeTarget
                | RunExecution RunTarget
                | TestRunExecution TestTarget
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
+instance ToJSON Execution
 
 data MakeTarget = MakeTarget {
       make_dir  :: FilePath
     , make_file :: FilePath
     , make_rule :: Maybe String
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Generic)
+instance ToJSON MakeTarget
 
 data TestTarget = TestTarget {
       test_target_problem  :: Problem
@@ -138,14 +147,16 @@ data TestTarget = TestTarget {
     , test_target_bin      :: FilePath
     , test_target_input    :: Maybe FilePath
     , test_target_output   :: FilePath
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Generic)
+instance ToJSON TestTarget
 
 data RunTarget = RunTarget {
       run_target_problem  :: Problem
     , run_target_language :: Language
     , run_target_bin      :: FilePath
     , run_target_input    :: Maybe FilePath
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Generic)
+instance ToJSON RunTarget
 
 --[ Monads ]--
 

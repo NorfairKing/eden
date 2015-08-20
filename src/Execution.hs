@@ -1,8 +1,11 @@
 module Execution where
 
-import           System.Directory (doesDirectoryExist, doesFileExist)
+import           Data.Aeson.Encode.Pretty (encodePretty)
+import qualified Data.ByteString.Lazy     as B
+import           System.Directory         (doesDirectoryExist, doesFileExist)
 
-import           Data.List        (delete, find)
+import           Data.List                (delete, find)
+
 
 import           Constants
 import           Eden
@@ -12,8 +15,12 @@ import           Utils
 
 executeForrest :: ExecutionForest -> EdenMake ()
 executeForrest ef = do
-    rf <- reduceForest ef
-    mapM_ executeExecutionTarget $ execution_targets rf
+    -- liftIO $ B.putStr $ encodePretty ef
+    newTargets <- reduceForest $ execution_targets ef
+    liftIO $ B.putStr $ encodePretty newTargets
+    mapM_ executeExecutionTarget newTargets
+
+--reduceForest' = return
 
 executeExecutionTarget :: ExecutionTarget -> EdenMake ()
 executeExecutionTarget et = do
@@ -23,27 +30,49 @@ executeExecutionTarget et = do
       TestRunExecution rt -> doTestExecution rt
     mapM_ executeExecutionTarget $ execution_dependants et
 
-reduceForest :: ExecutionForest -> EdenMake ExecutionForest
-reduceForest ef = do
-      rd <- doReduction ef
-      if ef == rd
-      then return ef
+reduceForest :: [ExecutionTarget] -> EdenMake [ExecutionTarget]
+reduceForest ts = do
+      rd <- doReduction ts
+      if ts == rd
+      then return ts
       else reduceForest rd
   where
-    ts = execution_targets ef
-    doReduction :: ExecutionForest -> EdenMake ExecutionForest
-    doReduction ef = case find sameExecution (ets `x` ets) of
-                        Nothing -> return ef
-                        Just (t1, t2) -> do
-                            let sameTarget = ExecutionTarget {
-                                  execution = execution t1
-                                , execution_dependants = execution_dependants t1 ++ execution_dependants t2
-                              }
-                            let newTargets = (++ [sameTarget]) $ delete t1 $ delete t2 ets
-                            return $ ExecutionForest { execution_targets = newTargets }
-      where ets = execution_targets ef
+    doReduction :: [ExecutionTarget] -> EdenMake [ExecutionTarget]
+    doReduction [] = return []
+    doReduction ets = do
+        -- ets <- mapM easyReduction etss
+        case find sameExecution (ets `x` ets) of
+              Just (t1, t2) -> do -- combine bottom level targets
+                  let sameTarget = ExecutionTarget {
+                        execution = execution t1
+                      , execution_dependants = execution_dependants t1 ++ execution_dependants t2
+                    }
+                  let newTargets = (++ [sameTarget]) $ delete t1 $ delete t2 ets
+                  return newTargets
+              Nothing -> do -- go one level deper
+                  (flip mapM) ets $ \et -> do
+                      reduced <- doReduction $ execution_dependants et
+                      return $ ExecutionTarget {
+                          execution = execution et
+                        , execution_dependants = reduced
+                        }
     sameExecution :: (ExecutionTarget, ExecutionTarget) -> Bool
     sameExecution (et1, et2) = execution et1 == execution et2
+    easyReduction :: ExecutionTarget -> EdenMake ExecutionTarget
+    easyReduction et = do
+          newDependants <- (flip mapM) deps $ \eto -> do
+                            etor <- easyReduction eto
+                            if sameExecution (et, etor)
+                            then return $ execution_dependants etor --skip etor
+                            else return $ [etor]
+          return $ ExecutionTarget {
+                    execution = eet
+                  , execution_dependants = concat newDependants
+                }
+      where
+        eet = execution et
+        deps = execution_dependants et
+
 
 
 x :: Eq a => [a] -> [a] -> [(a,a)]

@@ -62,4 +62,4 @@ buildSolution p l bmf bmr = do
             Nothing -> makefilePath l
             Just f  -> return f
     let mt = make md mf bmr
-    return $ mt `after` btl
+    return $ btl `before` mt

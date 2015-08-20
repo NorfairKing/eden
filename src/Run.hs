@@ -58,4 +58,4 @@ runSolution p l bin inp = do
             }
         , execution_dependants = []
       }
-    return $ rst `after` bst
+    return $ bst `before` rst
