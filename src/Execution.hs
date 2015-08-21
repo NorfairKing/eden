@@ -1,53 +1,78 @@
 module Execution where
 
-import           System.Directory (doesDirectoryExist, doesFileExist)
+import           Data.Aeson.Encode.Pretty (encodePretty)
+import           System.Directory         (doesDirectoryExist, doesFileExist)
 
-import           Data.List        (delete, find)
+import qualified Data.ByteString.Lazy     as B
+import           Data.List                (nub)
+import           Data.Map                 (Map)
+import qualified Data.Map                 as M
+import           Data.Maybe               (fromJust)
+import           Data.Tree                (Forest, Tree (..), levels)
 
-import           Constants
 import           Eden
 import           Solutions
 import           Types
 import           Utils
 
-executeForrest :: ExecutionForest -> EdenMake ()
-executeForrest ef = do
-    rf <- reduceForest ef
-    mapM_ executeExecutionTarget $ execution_targets rf
+executeGraph :: ExecutionDependencies -> EdenMake ()
+executeGraph ef = do
+    liftIO $ B.putStrLn $ encodePretty ef
+    let forest = graphToForest $ toGraph ef
+    liftIO $ B.putStrLn $ encodePretty forest
+    executeForest forest
 
-executeExecutionTarget :: ExecutionTarget -> EdenMake ()
-executeExecutionTarget et = do
-    case execution et of
-      MakeExecution mt    -> doMake mt
-      RunExecution rt     -> doRunExecution rt >> return ()
-      TestRunExecution rt -> doTestExecution rt
-    mapM_ executeExecutionTarget $ execution_dependants et
+executeForest :: ExecutionForest -> EdenMake ()
+executeForest = mapM_ executeTree
 
-reduceForest :: ExecutionForest -> EdenMake ExecutionForest
-reduceForest ef = do
-      rd <- doReduction ef
-      if ef == rd
-      then return ef
-      else reduceForest rd
+executeTree :: ExecutionTree -> EdenMake ()
+executeTree et = do
+    execute $ rootLabel et
+    executeForest $ subForest et
+
+execute :: Execution -> EdenMake ()
+execute (MakeExecution mt)    = doMake mt
+execute (RunExecution rt)     = doRunExecution rt >> return ()
+execute (TestRunExecution rt) = doTestExecution rt
+
+toGraph :: ExecutionDependencies -> ExecutionDependencyGraph
+toGraph edg = addAll edg startingMap
   where
-    ts = execution_targets ef
-    doReduction :: ExecutionForest -> EdenMake ExecutionForest
-    doReduction ef = case find sameExecution (ets `x` ets) of
-                        Nothing -> return ef
-                        Just (t1, t2) -> do
-                            let sameTarget = ExecutionTarget {
-                                  execution = execution t1
-                                , execution_dependants = execution_dependants t1 ++ execution_dependants t2
-                              }
-                            let newTargets = (++ [sameTarget]) $ delete t1 $ delete t2 ets
-                            return $ ExecutionForest { execution_targets = newTargets }
-      where ets = execution_targets ef
-    sameExecution :: (ExecutionTarget, ExecutionTarget) -> Bool
-    sameExecution (et1, et2) = execution et1 == execution et2
+    startingMap :: Map Execution [Execution]
+    startingMap = M.fromList $ zip (allExecutions edg) $ repeat []
 
+    -- Map to dependencies: (a -> b) means b has to happen before a
+    addAll :: ExecutionDependencies -> ExecutionDependencyGraph -> ExecutionDependencyGraph
+    addAll [] accMap                  = accMap
+    addAll ((Nothing, _): es) accMap  = addAll es accMap
+    addAll ((Just bf, af):es) accMap  = addAll es $ M.update fn af accMap
+      where
+        fn :: [Execution] -> Maybe [Execution]
+        fn es = Just (bf:es)
 
-x :: Eq a => [a] -> [a] -> [(a,a)]
-x as bs = [(a,b) | a <- as, b <- bs, a /= b]
+allExecutions :: ExecutionDependencies -> [Execution]
+allExecutions edg = nub $ concatMap go $ edg
+  where
+    go (Nothing, e)  = [e]
+    go (Just e1, e2) = [e1, e2]
+
+graphToForest :: ExecutionDependencyGraph -> Forest Execution
+graphToForest graph = map (buildBackwardsTreeFrom graph) $ depencencyRoots graph
+
+buildBackwardsTreeFrom :: ExecutionDependencyGraph -> Execution -> Tree Execution
+buildBackwardsTreeFrom graph v = Node {
+        rootLabel = v
+      , subForest = map (buildBackwardsTreeFrom graph) reachingV
+    }
+  where
+    reachingV :: [Execution]
+    reachingV = filter reachesV $ M.keys graph
+
+    reachesV :: Execution -> Bool
+    reachesV w = v `elem` (fromJust $ M.lookup w graph)
+
+depencencyRoots :: ExecutionDependencyGraph -> [Execution]
+depencencyRoots = M.keys . M.filter null
 
 doMake :: MakeTarget -> EdenMake ()
 doMake mt = do

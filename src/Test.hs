@@ -3,11 +3,9 @@ module Test where
 import           Build
 import           Constants
 import           Make
-import           Run
 import           Schedule
 import           Solutions
 import           Types
-import           Utils
 
 test :: Target -> EdenTest ()
 test TargetAll            = testAll
@@ -30,7 +28,7 @@ testLibraries = do
 testSingleLibrary :: Language -> EdenTest ()
 testSingleLibrary l = testLibrary l >>= schedule
 
-testLibrary :: Language -> Eden c ExecutionTarget
+testLibrary :: Language -> Eden c [Execution]
 testLibrary l = do
     blt <- buildLibrary l
 
@@ -39,7 +37,7 @@ testLibrary l = do
     let rule = Just defaultTestRuleName
     let mt =  make md mf rule
 
-    return $ mt `after` blt
+    return $ blt ++ [mt]
 
 testProblems :: EdenTest ()
 testProblems = do
@@ -54,9 +52,8 @@ testProblem p = do
 testSingleSolution :: Problem -> Language -> EdenTest ()
 testSingleSolution p l = testSolution p l >>= schedule
 
-testSolution :: Problem -> Language -> Eden c ExecutionTarget
+testSolution :: Problem -> Language -> Eden c [Execution]
 testSolution p l = do
-    btl <- buildLibrary l
     bts <- buildSolution p l Nothing Nothing
 
     md <- solutionDir p l
@@ -66,15 +63,12 @@ testSolution p l = do
 
     dsb <- defaultSolutionBinary p l
     dof <- defaultOutputFilePath p
-    minput <- actualSolutionInput p l Nothing
-    let tet = ExecutionTarget {
-        execution = TestRunExecution TestTarget {
+    minput <- actualSolutionInput p Nothing
+    let tet = TestRunExecution TestTarget {
             test_target_problem  = p
           , test_target_language = l
           , test_target_bin      = dsb
           , test_target_input    = minput
           , test_target_output   = dof
           }
-      , execution_dependants = []
-      }
-    return $ inOrder [btl, bts, btm, tet]
+    return $ bts ++ [btm, tet]
