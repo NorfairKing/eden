@@ -15,9 +15,6 @@ import           Control.Monad.Writer   (WriterT, runWriterT, tell)
 
 import           Data.Map               (Map)
 import           Data.Tree              (Forest, Tree (..))
-import           GHC.Generics
-
-import           Data.Aeson             (ToJSON)
 
 --[ Command line options ]--
 
@@ -121,15 +118,13 @@ type ExecutionTree = Tree Execution
 data Execution = MakeExecution MakeTarget
                | RunExecution RunTarget
                | TestRunExecution TestTarget
-  deriving (Show, Eq, Ord, Generic)
-instance ToJSON Execution
+  deriving (Show, Eq, Ord)
 
 data MakeTarget = MakeTarget {
       make_dir  :: FilePath
     , make_file :: FilePath
     , make_rule :: Maybe String
-  } deriving (Show, Eq, Ord, Generic)
-instance ToJSON MakeTarget
+  } deriving (Show, Eq, Ord)
 
 data TestTarget = TestTarget {
       test_target_problem  :: Problem
@@ -137,16 +132,14 @@ data TestTarget = TestTarget {
     , test_target_bin      :: FilePath
     , test_target_input    :: Maybe FilePath
     , test_target_output   :: FilePath
-  } deriving (Show, Eq, Ord, Generic)
-instance ToJSON TestTarget
+  } deriving (Show, Eq, Ord)
 
 data RunTarget = RunTarget {
       run_target_problem  :: Problem
     , run_target_language :: Language
     , run_target_bin      :: FilePath
     , run_target_input    :: Maybe FilePath
-  } deriving (Show, Eq, Ord, Generic)
-instance ToJSON RunTarget
+  } deriving (Show, Eq, Ord)
 
 --[ Monads ]--
 

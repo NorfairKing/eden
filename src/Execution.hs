@@ -1,14 +1,12 @@
 module Execution where
 
-import           Data.Aeson.Encode.Pretty (encodePretty)
-import           System.Directory         (doesDirectoryExist, doesFileExist)
+import           System.Directory (doesDirectoryExist, doesFileExist)
 
-import qualified Data.ByteString.Lazy     as B
-import           Data.List                (nub)
-import           Data.Map                 (Map)
-import qualified Data.Map                 as M
-import           Data.Maybe               (fromJust)
-import           Data.Tree                (Forest, Tree (..), levels)
+import           Data.List        (nub)
+import           Data.Map         (Map)
+import qualified Data.Map         as M
+import           Data.Maybe       (fromJust)
+import           Data.Tree        (Forest, Tree (..), levels)
 
 import           Eden
 import           Solutions
@@ -16,11 +14,7 @@ import           Types
 import           Utils
 
 executeGraph :: ExecutionDependencies -> EdenMake ()
-executeGraph ef = do
-    liftIO $ B.putStrLn $ encodePretty ef
-    let forest = graphToForest $ toGraph ef
-    liftIO $ B.putStrLn $ encodePretty forest
-    executeForest forest
+executeGraph ef = executeForest . graphToForest $ toGraph ef
 
 executeForest :: ExecutionForest -> EdenMake ()
 executeForest = mapM_ executeTree
