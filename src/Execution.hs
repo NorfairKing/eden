@@ -20,16 +20,18 @@ import           Utils
 
 executeGraph :: ExecutionDependencyGraph -> EdenMake ()
 executeGraph ef = do
-    liftIO $ B.putStr $ encodePretty ef
+    liftIO $ B.putStrLn $ encodePretty ef
     let forest = toForest ef
-    liftIO $ B.putStr $ encodePretty forest
+    liftIO $ B.putStrLn $ encodePretty forest
     executeForest forest
 
 executeForest :: ExecutionForest -> EdenMake ()
 executeForest = mapM_ executeTree
 
 executeTree :: ExecutionTree -> EdenMake ()
-executeTree et = mapM_ (mapM_ execute) . reverse $ levels et
+executeTree et = do
+    execute $ rootLabel et
+    executeForest $ subForest et
 
 execute :: Execution -> EdenMake ()
 execute (MakeExecution mt)    = doMake mt
@@ -94,7 +96,7 @@ toForest edg = map (fmap mapBack) $ graphToForest
     -- Map to dependencies: (a -> b) means b has to happen before a
     addAll :: ExecutionDependencyGraph -> Map Execution [Execution] -> Map Execution [Execution]
     addAll [] accMap                  = accMap
-    addAll ((Nothing, e2):es) accMap  = addAll es accMap
+    addAll ((Nothing, _): es) accMap  = addAll es accMap
     addAll ((Just bf, af):es) accMap  = addAll es $ update fn af accMap
       where
         fn :: [Execution] -> Maybe [Execution]

@@ -54,9 +54,6 @@ testSingleSolution p l = testSolution p l >>= schedule
 
 testSolution :: Problem -> Language -> Eden c [Execution]
 testSolution p l = do
-    btl <- buildLibrary l
-    ttl <- testLibrary l
-
     bts <- buildSolution p l Nothing Nothing
 
     md <- solutionDir p l
@@ -74,4 +71,4 @@ testSolution p l = do
           , test_target_input    = minput
           , test_target_output   = dof
           }
-    return $ btl ++ ttl ++ bts ++ [btm, tet]
+    return $ bts ++ [btm, tet]
