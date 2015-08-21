@@ -13,6 +13,7 @@ import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (ReaderT, ask, asks, runReaderT)
 import           Control.Monad.Writer   (WriterT, runWriterT, tell)
 
+import           Data.Map               (Map)
 import           Data.Tree              (Forest, Tree (..))
 import           GHC.Generics
 
@@ -110,7 +111,10 @@ data Target = TargetAll
             | TargetSolution Problem Language
     deriving Show
 
-type ExecutionDependencyGraph = [(Maybe Execution, Execution)] -- Edges
+--[ Execution ]--
+
+type ExecutionDependencyGraph = Map Execution [Execution]
+type ExecutionDependencies = [(Maybe Execution, Execution)] -- Edges
 type ExecutionForest = Forest Execution
 type ExecutionTree = Tree Execution
 
@@ -146,7 +150,7 @@ instance ToJSON RunTarget
 
 --[ Monads ]--
 
-type Eden c = ExceptT EdenError ( WriterT ExecutionDependencyGraph (ReaderT (GlobalOptions, c) IO))
+type Eden c = ExceptT EdenError ( WriterT ExecutionDependencies (ReaderT (GlobalOptions, c) IO))
 
 type EdenError = String
 
