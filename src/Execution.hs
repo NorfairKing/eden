@@ -2,7 +2,7 @@ module Execution where
 
 import           System.Directory (doesDirectoryExist, doesFileExist)
 
-import           Data.List        (nub)
+import           Data.List        (nub, sort)
 import           Data.Map         (Map)
 import qualified Data.Map         as M
 import           Data.Maybe       (fromJust)
@@ -17,12 +17,18 @@ executeGraph :: ExecutionDependencies -> EdenMake ()
 executeGraph ef = executeForest . graphToForest $ toGraph ef
 
 executeForest :: ExecutionForest -> EdenMake ()
-executeForest = mapM_ executeTree
+executeForest = mapM_ (mapM_ execute . sort) . aggregate . map levels
 
-executeTree :: ExecutionTree -> EdenMake ()
-executeTree et = do
-    execute $ rootLabel et
-    executeForest $ subForest et
+aggregate :: [[[Execution]]] -> [[Execution]]
+aggregate [] = []
+aggregate [t] = t
+aggregate (t1:t2:ts) = aggregate $ (aggregateTrees t1 t2):ts
+
+aggregateTrees :: [[Execution]] -> [[Execution]] -> [[Execution]]
+aggregateTrees [] [] = []
+aggregateTrees x  [] = x
+aggregateTrees [] y  = y
+aggregateTrees (t1:ts1) (t2:ts2) = (t1 ++ t2):(aggregateTrees ts1 ts2)
 
 execute :: Execution -> EdenMake ()
 execute (MakeExecution mt)    = doMake mt
