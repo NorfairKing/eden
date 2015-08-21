@@ -96,7 +96,6 @@ doMake mt = do
                         "make"
                     ,   "--directory"   , dir
                     ,   "--file"        , makefile
-                    ,   "--jobs"
                     ,   rulestr
                     ]
             runRaw cmd
