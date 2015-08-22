@@ -6,7 +6,8 @@ import           Data.List        (nub, sort)
 import           Data.Map         (Map)
 import qualified Data.Map         as M
 import           Data.Maybe       (fromJust)
-import           Data.Tree        (Forest, Tree (..), levels)
+import           Data.Tree        (Forest, Tree (..))
+import qualified Data.Tree        as T (levels)
 
 import           Eden
 import           Solutions
@@ -17,7 +18,7 @@ executeGraph :: ExecutionDependencies -> EdenMake ()
 executeGraph ef = executeForest . graphToForest $ toGraph ef
 
 executeForest :: ExecutionForest -> EdenMake ()
-executeForest = mapM_ (mapM_ execute . sort) . aggregate . map levels
+executeForest = mapM_ (mapM_ execute . sort) . aggregate . map T.levels
 
 aggregate :: [[[a]]] -> [[a]]
 aggregate [] = []
