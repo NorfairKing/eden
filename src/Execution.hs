@@ -106,12 +106,17 @@ doRunExecution rt = do
     let cmd = run_target_bin rt
     let p = run_target_problem rt
     let l = run_target_language rt
-    printIf (askGlobal opt_commands) cmd
-    result <- case run_target_input rt of
-        Nothing  -> runCommand cmd
-        Just inf -> runCommandWithInput cmd inf
-    liftIO $ putStr $ unwords ["Run: ", problemDirName p, padNWith 8 ' ' l ++ ":", result]
-    return $ read result
+
+    binExists <- liftIO $ doesFileExist cmd
+    if binExists
+    then do
+        printIf (askGlobal opt_commands) cmd
+        result <- case run_target_input rt of
+            Nothing  -> runCommand cmd
+            Just inf -> runCommandWithInput cmd inf
+        liftIO $ putStr $ unwords ["Run: ", problemDirName p, padNWith 8 ' ' l ++ ":", result]
+        return $ read result
+    else throwError $ unwords ["The executable", cmd, "does not exist."]
 
 doTestExecution :: TestTarget -> EdenMake ()
 doTestExecution tt = do

@@ -58,7 +58,6 @@ checkLibrary l = do
     else throwError $ unwords ["The library for", l, "doesn't exist."]
 
 --[ Solutions ]--
-
 solutionDir :: Problem -> Language -> Eden c FilePath
 solutionDir p l = do
     probDir <- problemDir p
