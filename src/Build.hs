@@ -29,6 +29,7 @@ buildSingleLibrary l = buildLibrary l >>= schedule
 
 buildLibrary :: Language -> Eden c [Execution]
 buildLibrary l = do
+    checkLibrary l
     md <- libraryDir l
     mf <- libMakefilePath l
     return $ [make md mf Nothing]
@@ -40,11 +41,13 @@ buildProblems = do
 
 buildProblem :: Problem -> EdenBuild ()
 buildProblem p = do
+    checkProblem p
     allSolutions <- solutions p
     mapM_ (buildSingleSolution p) allSolutions
 
 buildSingleSolution :: Problem -> Language -> EdenBuild ()
 buildSingleSolution p l = do
+    checkSolution p l
     bmf <- askEden build_makefile
     bmr <- askEden build_makerule
     buildSolution p l bmf bmr >>= schedule

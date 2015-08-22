@@ -76,6 +76,7 @@ This will ensure that your explanation of your solution is later included in you
 A solution's input can be provided in the problem directory with an `input.txt` file.
 The expected output can be provided in the problem directory with an `output.txt` file.
 `eden test solution <problem> <language>` will test whether the solution's output equals the contents of the `output.txt` file, as well as checking that `make test` terminates successfully.
+In fact, any file that starts with `output` will be considered a test case and eden will try to give the same file (but with `output` replaced with `input`) as the input to the binary to test.
 
 #### The `build` directory
 

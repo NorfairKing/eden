@@ -32,11 +32,17 @@ defaultMakefileName = "makefile"
 defaultExecutableName :: String
 defaultExecutableName = "solution.bin"
 
+inputName :: String
+inputName = "input"
+
 defaultInputFileName :: String
-defaultInputFileName = "input.txt"
+defaultInputFileName = inputName <.> "txt"
+
+outputName :: String
+outputName = "output"
 
 defaultOutputFileName :: String
-defaultOutputFileName = "output.txt"
+defaultOutputFileName = outputName <.> "txt"
 
 defaultTestSuiteName :: String
 defaultTestSuiteName = "testsuite.bin"
@@ -58,3 +64,6 @@ publishLibraryImportsFileName = "libraries" <.> defaultWriteupExtenstion
 
 mainWriteupFile :: String
 mainWriteupFile = "main" <.> defaultWriteupExtenstion
+
+defaultTimeout :: Int
+defaultTimeout = 60 -- Seconds

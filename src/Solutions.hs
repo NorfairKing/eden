@@ -1,10 +1,12 @@
 module Solutions where
 
-import           System.Directory      (doesFileExist, getDirectoryContents)
+import           System.Directory      (doesDirectoryExist, doesFileExist,
+                                        getDirectoryContents)
 import           System.FilePath.Posix ((</>))
 
 import           Control.Monad         (filterM)
-import           Data.List             (nub, sort)
+import           Data.List             (isPrefixOf, nub, sort, sortBy)
+import           Data.Ord              (comparing)
 
 import           Constants
 import           Paths
@@ -31,9 +33,31 @@ problems = do
     isProblemDir d = elem d $ map problemDirName nums
     nums = [1..999]
 
+checkProblem :: Problem -> Eden c ()
+checkProblem p = do
+    dir <- problemDir p
+    exists <- liftIO $ doesDirectoryExist dir
+    if exists
+    then return ()
+    else throwError $ unwords ["Problem", show p, "hasn't been solved."]
+
+checkSolution :: Problem -> Language -> Eden c ()
+checkSolution p l = do
+    dir <- solutionDir p l
+    exists <- liftIO $ doesDirectoryExist dir
+    if exists
+    then return ()
+    else throwError $ unwords ["There is no solution in", l, "for problem", show p ++ "."]
+
+checkLibrary :: Language -> Eden c ()
+checkLibrary l = do
+    dir <- libraryDir l
+    exists <- liftIO $ doesDirectoryExist dir
+    if exists
+    then return ()
+    else throwError $ unwords ["The library for", l, "doesn't exist."]
 
 --[ Solutions ]--
-
 solutionDir :: Problem -> Language -> Eden c FilePath
 solutionDir p l = do
     probDir <- problemDir p
@@ -130,6 +154,31 @@ defaultSolutionBinary :: Problem -> Language -> Eden c FilePath
 defaultSolutionBinary p l = do
     dir <- solutionDir p l
     return $ dir </> defaultExecutableName
+
+ioFilePaths :: Problem -> Eden c [(Maybe FilePath, FilePath)]
+ioFilePaths p = do
+    dir <- problemDir p
+    cts <- liftIO $ getDirectoryContents dir
+
+    let os = filter (isPrefixOf outputName) $ cts
+    let is = map ((inputName ++) . drop (length outputName)) os
+    let ifs = map (dir </>) is
+    let ofs = map (dir </>) os
+    tts <- mapM testCase $ zip ifs ofs
+    return $ reverse . sortBy (comparing $ length . snd) $ tts
+
+testCase :: (FilePath, FilePath) -> Eden c (Maybe FilePath, FilePath)
+testCase (ip, op) = do
+    exists <- liftIO $ doesFileExist ip
+    return $ if exists
+             then (Just ip, op)
+             else (Nothing, op)
+
+defaultIOFilePaths :: Problem -> Eden c (Maybe FilePath, FilePath)
+defaultIOFilePaths p = do
+    inp <- defaultInputFilePath p
+    oup <- defaultOutputFilePath p
+    return (Just inp, oup)
 
 defaultInputFilePath :: Problem -> Eden c FilePath
 defaultInputFilePath p = do
