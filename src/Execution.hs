@@ -1,6 +1,7 @@
 module Execution where
 
 import           System.Directory (doesDirectoryExist, doesFileExist)
+import           System.Timeout   (timeout)
 
 import           Data.List        (nub, sort)
 import           Data.Map         (Map)
@@ -9,6 +10,7 @@ import           Data.Maybe       (fromJust)
 import           Data.Tree        (Forest, Tree (..))
 import qualified Data.Tree        as T (levels)
 
+import           Constants
 import           Eden
 import           Solutions
 import           Types
@@ -109,17 +111,23 @@ doRunExecution rt = do
     let cmd = run_target_bin rt
     let p = run_target_problem rt
     let l = run_target_language rt
-
+    let same = ["Run: ", problemDirName p, padNWith 8 ' ' l ++ ":"]
     binExists <- liftIO $ doesFileExist cmd
     if binExists
     then do
         printIf (askGlobal opt_commands) cmd
-        result <- case run_target_input rt of
-            Nothing  -> runCommand cmd
-            Just inf -> runCommandWithInput cmd inf
-        liftIO $ putStr $ unwords ["Run: ", problemDirName p, padNWith 8 ' ' l ++ ":", result]
+        let ioFunc = case run_target_input rt of
+                      Nothing  -> runCommand cmd
+                      Just inf -> runCommandWithInput cmd inf
+        result <- do
+            mresult <- liftIO $ timeout (defaultTimeout * 10^6) $ ioFunc
+            case mresult of
+              Nothing -> throwError $ unwords $ same ++ ["Execution timed out after", show defaultTimeout, "seconds."]
+              Just rs -> return rs
+        liftIO $ putStr $ unwords $ same ++ [result]
         return $ read result
-    else throwError $ unwords ["The executable", cmd, "does not exist."]
+    else throwError $ unwords $ same ++ ["The executable", cmd, "does not exist."]
+
 
 doTestExecution :: TestTarget -> EdenMake ()
 doTestExecution tt = do
@@ -134,9 +142,9 @@ doTestExecution tt = do
           , run_target_bin = bin
           , run_target_input = mip
         }
+    let same = ["Test:", problemDirName p, padNWith 8 ' ' l ++ ":"]
     actual <- doRunExecution rt
     expected <- readFromFile op
-    let same = ["Test:", problemDirName p, padNWith 8 ' ' l ++ ":"]
     if actual /= expected
     then          throwError $ unwords $ same ++ ["Fail,", "Expected:", show expected, "Actual:", show actual]
     else liftIO $ putStrLn   $ unwords $ same ++ ["Success."]

@@ -20,15 +20,15 @@ snd3 (_,x,_) = x
 thd3 :: (a, b, c) -> c
 thd3 (_,_,x) = x
 
-runCommandWithInput :: String -> FilePath -> Eden c String
+runCommandWithInput :: String -> FilePath -> IO String
 runCommandWithInput str inf = do
-    instr <- liftIO $ readFile inf
-    liftIO $ readProcess bin args instr
+    instr <- readFile inf
+    readProcess bin args instr
   where (bin:args) = words str
 
 
-runCommand :: String -> Eden c String
-runCommand str = liftIO $ readProcess bin args ""
+runCommand :: String -> IO String
+runCommand str = readProcess bin args ""
   where (bin:args) = words str
 
 runRaw :: String -> Eden c ()

@@ -64,3 +64,6 @@ publishLibraryImportsFileName = "libraries" <.> defaultWriteupExtenstion
 
 mainWriteupFile :: String
 mainWriteupFile = "main" <.> defaultWriteupExtenstion
+
+defaultTimeout :: Int
+defaultTimeout = 60 -- Seconds
