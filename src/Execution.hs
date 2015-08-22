@@ -114,16 +114,18 @@ doRunExecution rt = do
 
 doTestExecution :: TestTarget -> EdenMake ()
 doTestExecution tt = do
-    let p = test_target_problem tt
-    let l = test_target_language tt
+    let p   = test_target_problem tt
+    let l   = test_target_language tt
+    let bin = test_target_bin tt
+    let mip = test_target_input tt
+    let op  = test_target_output tt
     actual <- doRunExecution RunTarget {
             run_target_problem = p
           , run_target_language = l
-          , run_target_bin = test_target_bin tt
-          , run_target_input = test_target_input tt
+          , run_target_bin = bin
+          , run_target_input = mip
         }
-    dof <- defaultOutputFilePath p
-    expected <- readFromFile dof
+    expected <- readFromFile op
     let same = ["Test:", problemDirName p, padNWith 8 ' ' l ++ ":"]
     if actual /= expected
     then          throwError $ unwords $ same ++ ["Fail,", "Expected:", show expected, "Actual:", show actual]

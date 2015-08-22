@@ -4,7 +4,8 @@ import           System.Directory      (doesFileExist, getDirectoryContents)
 import           System.FilePath.Posix ((</>))
 
 import           Control.Monad         (filterM)
-import           Data.List             (nub, sort)
+import           Data.List             (isPrefixOf, nub, sort, sortBy)
+import           Data.Ord              (comparing)
 
 import           Constants
 import           Paths
@@ -130,6 +131,30 @@ defaultSolutionBinary :: Problem -> Language -> Eden c FilePath
 defaultSolutionBinary p l = do
     dir <- solutionDir p l
     return $ dir </> defaultExecutableName
+
+ioFilePaths :: Problem -> Eden c [(Maybe FilePath, FilePath)]
+ioFilePaths p = do
+    dir <- problemDir p
+    cts <- liftIO $ getDirectoryContents dir
+
+    let ops = filter (isPrefixOf outputName) cts
+    let ips = map ((inputName ++) . drop (length outputName)) ops
+    tts <- mapM (testCase p) $ zip ips ops
+    return $ reverse . sortBy (comparing $ length . snd) $ tts
+
+testCase :: Problem -> (FilePath, FilePath) -> Eden c (Maybe FilePath, FilePath)
+testCase p (ip, op) = do
+    dir <- problemDir p
+    exists <- liftIO $ doesFileExist $ dir </> ip
+    return $ if exists
+             then (Just ip, op)
+             else (Nothing, op)
+
+defaultIOFilePaths :: Problem -> Eden c (Maybe FilePath, FilePath)
+defaultIOFilePaths p = do
+    inp <- defaultInputFilePath p
+    oup <- defaultOutputFilePath p
+    return (Just inp, oup)
 
 defaultInputFilePath :: Problem -> Eden c FilePath
 defaultInputFilePath p = do

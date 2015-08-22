@@ -61,14 +61,17 @@ testSolution p l = do
     let rule = Just defaultTestRuleName
     let btm = make md mf rule
 
-    dsb <- defaultSolutionBinary p l
-    dof <- defaultOutputFilePath p
-    minput <- actualSolutionInput p Nothing
-    let tet = TestRunExecution TestTarget {
-            test_target_problem  = p
-          , test_target_language = l
-          , test_target_bin      = dsb
-          , test_target_input    = minput
-          , test_target_output   = dof
-          }
-    return $ bts ++ [btm, tet]
+    bin <- defaultSolutionBinary p l
+    iops <- ioFilePaths p
+    let tts = map (testTarget p l bin) iops
+    return $ bts ++ [btm] ++ tts
+
+testTarget :: Problem -> Language -> FilePath -> (Maybe FilePath, FilePath) -> Execution
+testTarget p l bin (mip, op) =
+    TestRunExecution TestTarget {
+        test_target_problem  = p
+      , test_target_language = l
+      , test_target_bin      = bin
+      , test_target_input    = mip
+      , test_target_output   = op
+      }
