@@ -19,12 +19,12 @@ executeGraph ef = executeForest . graphToForest $ toGraph ef
 executeForest :: ExecutionForest -> EdenMake ()
 executeForest = mapM_ (mapM_ execute . sort) . aggregate . map levels
 
-aggregate :: [[[Execution]]] -> [[Execution]]
+aggregate :: [[[a]]] -> [[a]]
 aggregate [] = []
 aggregate [t] = t
 aggregate (t1:t2:ts) = aggregate $ (aggregateTrees t1 t2):ts
 
-aggregateTrees :: [[Execution]] -> [[Execution]] -> [[Execution]]
+aggregateTrees :: [[a]] -> [[a]] -> [[a]]
 aggregateTrees [] [] = []
 aggregateTrees x  [] = x
 aggregateTrees [] y  = y
