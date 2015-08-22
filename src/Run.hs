@@ -26,11 +26,13 @@ runAllProblems = do
 
 runProblem :: Problem -> EdenRun ()
 runProblem p = do
+    checkProblem p
     allSolutions <- solutions p
     mapM_ (runSingleSolution p) allSolutions
 
 runSingleSolution :: Problem -> Language -> EdenRun ()
 runSingleSolution p l = do
+    checkSolution p l
     bin <- askEden run_binary
     inp <- askEden run_input
     runSolution p l bin inp >>= schedule

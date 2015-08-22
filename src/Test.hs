@@ -26,7 +26,9 @@ testLibraries = do
     mapM_ testSingleLibrary allLibraries
 
 testSingleLibrary :: Language -> EdenTest ()
-testSingleLibrary l = testLibrary l >>= schedule
+testSingleLibrary l = do
+    checkLibrary l
+    testLibrary l >>= schedule
 
 testLibrary :: Language -> Eden c [Execution]
 testLibrary l = do
@@ -46,11 +48,14 @@ testProblems = do
 
 testProblem :: Problem -> EdenTest ()
 testProblem p = do
+    checkProblem p
     allSolutions <- solutions p
     mapM_ (testSingleSolution p) allSolutions
 
 testSingleSolution :: Problem -> Language -> EdenTest ()
-testSingleSolution p l = testSolution p l >>= schedule
+testSingleSolution p l = do
+    checkSolution p l
+    testSolution p l >>= schedule
 
 testSolution :: Problem -> Language -> Eden c [Execution]
 testSolution p l = do
