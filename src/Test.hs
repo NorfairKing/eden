@@ -36,10 +36,10 @@ testLibrary l = do
 
     md <- testsDir l
     mf <- testMakefilePath l
-    let rule = Just defaultTestRuleName
-    let mt =  make md mf rule
+    let buildTests =  make md mf Nothing
+    let runTests =  make md mf $ Just defaultTestRuleName
 
-    return $ blt ++ [mt]
+    return $ blt ++ [buildTests, runTests]
 
 testProblems :: EdenTest ()
 testProblems = do
