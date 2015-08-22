@@ -65,13 +65,13 @@ EDEN makes it very easy to compile your solution.
 From any directory in your EDEN repository, you can build any solution:
 
 ```
-pe $ eden build 1 c
+pe $ eden build solution 1 c
 ```
 
 Running a solution is also easy:
 
 ```
-pe $ eden run 1 c
+pe $ eden run solution 1 c
 No solutions will be spoiled.
 ```
 
