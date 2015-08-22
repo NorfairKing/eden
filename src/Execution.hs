@@ -18,7 +18,10 @@ executeGraph :: ExecutionDependencies -> EdenMake ()
 executeGraph ef = executeForest . graphToForest $ toGraph ef
 
 executeForest :: ExecutionForest -> EdenMake ()
-executeForest = mapM_ (mapM_ execute . sort) . aggregate . map T.levels
+executeForest = mapM_ (mapM_ executeSafe . sort) . aggregate . map T.levels
+  where
+    executeSafe :: Execution -> EdenMake ()
+    executeSafe e = execute e `catchError` (\e -> liftIO $ putStrLn e)
 
 aggregate :: [[[a]]] -> [[a]]
 aggregate [] = []
