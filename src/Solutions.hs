@@ -1,6 +1,7 @@
 module Solutions where
 
-import           System.Directory      (doesFileExist, getDirectoryContents)
+import           System.Directory      (doesDirectoryExist, doesFileExist,
+                                        getDirectoryContents)
 import           System.FilePath.Posix ((</>))
 
 import           Control.Monad         (filterM)
@@ -32,6 +33,29 @@ problems = do
     isProblemDir d = elem d $ map problemDirName nums
     nums = [1..999]
 
+checkProblem :: Problem -> Eden c ()
+checkProblem p = do
+    dir <- problemDir p
+    exists <- liftIO $ doesDirectoryExist dir
+    if exists
+    then return ()
+    else throwError $ unwords ["Problem", show p, "hasn't been solved."]
+
+checkSolution :: Problem -> Language -> Eden c ()
+checkSolution p l = do
+    dir <- solutionDir p l
+    exists <- liftIO $ doesDirectoryExist dir
+    if exists
+    then return ()
+    else throwError $ unwords ["There is no solution in", l, "for problem", show p ++ "."]
+
+checkLibrary :: Language -> Eden c ()
+checkLibrary l = do
+    dir <- libraryDir l
+    exists <- liftIO $ doesDirectoryExist dir
+    if exists
+    then return ()
+    else throwError $ unwords ["The library for", l, "doesn't exist."]
 
 --[ Solutions ]--
 
