@@ -28,6 +28,7 @@ executable eden
                      , heredoc              >= 0.2  && < 0.3
                      , template-haskell     >= 2.10 && < 2.11
                      , timeit               >= 1.0  && < 1.1
+                     , containers           >= 0.5  && < 0.6
 
 test-suite eden-tests
   type:                exitcode-stdio-1.0

@@ -8,9 +8,17 @@ import           System.IO             (hGetContents)
 import           System.Process        (readProcess, runInteractiveCommand,
                                         waitForProcess)
 
-
 import           Eden
 import           Types
+
+fst3 :: (a, b, c) -> a
+fst3 (x,_,_) = x
+
+snd3 :: (a, b, c) -> b
+snd3 (_,x,_) = x
+
+thd3 :: (a, b, c) -> c
+thd3 (_,_,x) = x
 
 runCommandWithInput :: String -> FilePath -> Eden c String
 runCommandWithInput str inf = do
@@ -60,3 +68,8 @@ realDir d | d == "."            = False
           | d == ".."           = False
           | hasExtension d      = False
           | otherwise           = True
+
+readFromFile :: Read a => FilePath -> Eden c a
+readFromFile fp = do
+    str <- liftIO $ readFile fp
+    return $ read str

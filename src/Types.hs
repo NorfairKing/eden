@@ -1,6 +1,6 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Types
-    (
-      module Types
+    ( module Types
     , module Control.Monad.Except
     , module Control.Monad.IO.Class
     , module Control.Monad.Reader
@@ -13,7 +13,8 @@ import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (ReaderT, ask, asks, runReaderT)
 import           Control.Monad.Writer   (WriterT, runWriterT, tell)
 
-import           Data.List              (nub)
+import           Data.Map               (Map)
+import           Data.Tree              (Forest, Tree (..))
 
 --[ Command line options ]--
 
@@ -22,6 +23,7 @@ data Options = Options {
     ,   opt_command :: Command
     } deriving Show
 
+defaultGlobalOptions :: GlobalOptions
 defaultGlobalOptions = GlobalOptions {
         opt_commands = False
     }
@@ -106,27 +108,42 @@ data Target = TargetAll
             | TargetSolution Problem Language
     deriving Show
 
-data MakeTargets = MakeTargets {
-        make_targets :: [MakeTarget]
-    }
-    deriving Show
+--[ Execution ]--
 
-instance Monoid MakeTargets where
-    mempty  = MakeTargets { make_targets = [] }
-    mappend mt1 mt2 = MakeTargets {
-            make_targets = nub $ make_targets mt1 ++ make_targets mt2
-        }
+type ExecutionDependencyGraph = Map Execution [Execution]
+type ExecutionDependencies = [(Maybe Execution, Execution)] -- Edges
+type ExecutionForest = Forest Execution
+type ExecutionTree = Tree Execution
+
+data Execution = MakeExecution MakeTarget
+               | RunExecution RunTarget
+               | TestRunExecution TestTarget
+  deriving (Show, Eq, Ord)
 
 data MakeTarget = MakeTarget {
-        make_dir  :: FilePath
-    ,   make_file :: FilePath
-    ,   make_rule :: Maybe String
-    }
-    deriving (Show, Eq)
+      make_dir  :: FilePath
+    , make_file :: FilePath
+    , make_rule :: Maybe String
+  } deriving (Show, Eq, Ord)
+
+data TestTarget = TestTarget {
+      test_target_problem  :: Problem
+    , test_target_language :: Language
+    , test_target_bin      :: FilePath
+    , test_target_input    :: Maybe FilePath
+    , test_target_output   :: FilePath
+  } deriving (Show, Eq, Ord)
+
+data RunTarget = RunTarget {
+      run_target_problem  :: Problem
+    , run_target_language :: Language
+    , run_target_bin      :: FilePath
+    , run_target_input    :: Maybe FilePath
+  } deriving (Show, Eq, Ord)
 
 --[ Monads ]--
 
-type Eden c = ExceptT EdenError ( WriterT MakeTargets (ReaderT (GlobalOptions, c) IO))
+type Eden c = ExceptT EdenError ( WriterT ExecutionDependencies (ReaderT (GlobalOptions, c) IO))
 
 type EdenError = String
 

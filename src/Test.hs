@@ -3,16 +3,17 @@ module Test where
 import           Build
 import           Constants
 import           Make
+import           Schedule
 import           Solutions
 import           Types
 
 test :: Target -> EdenTest ()
 test TargetAll            = testAll
 test TargetAllLibraries   = testLibraries
-test (TargetLibrary l)    = testLibrary l
+test (TargetLibrary l)    = testSingleLibrary l
 test TargetAllProblems    = testProblems
 test (TargetProblem p)    = testProblem p
-test (TargetSolution p l) = testSolution p l
+test (TargetSolution p l) = testSingleSolution p l
 
 testAll :: EdenTest ()
 testAll = do
@@ -22,17 +23,21 @@ testAll = do
 testLibraries :: EdenTest ()
 testLibraries = do
     allLibraries <- libraries
-    mapM_ testLibrary allLibraries
+    mapM_ testSingleLibrary allLibraries
 
-testLibrary :: Language -> EdenTest ()
+testSingleLibrary :: Language -> EdenTest ()
+testSingleLibrary l = testLibrary l >>= schedule
+
+testLibrary :: Language -> Eden c [Execution]
 testLibrary l = do
-    defaultBuild $ buildLibrary l
+    blt <- buildLibrary l
 
     md <- testsDir l
     mf <- testMakefilePath l
     let rule = Just defaultTestRuleName
+    let mt =  make md mf rule
 
-    make md mf rule
+    return $ blt ++ [mt]
 
 testProblems :: EdenTest ()
 testProblems = do
@@ -42,15 +47,28 @@ testProblems = do
 testProblem :: Problem -> EdenTest ()
 testProblem p = do
     allSolutions <- solutions p
-    mapM_ (testSolution p) allSolutions
+    mapM_ (testSingleSolution p) allSolutions
 
-testSolution :: Problem -> Language -> EdenTest ()
+testSingleSolution :: Problem -> Language -> EdenTest ()
+testSingleSolution p l = testSolution p l >>= schedule
+
+testSolution :: Problem -> Language -> Eden c [Execution]
 testSolution p l = do
-    defaultBuild $ buildLibrary l
-    defaultBuild $ build $ TargetSolution p l
+    bts <- buildSolution p l Nothing Nothing
 
     md <- solutionDir p l
     mf <- makefilePath l
     let rule = Just defaultTestRuleName
+    let btm = make md mf rule
 
-    make md mf rule
+    dsb <- defaultSolutionBinary p l
+    dof <- defaultOutputFilePath p
+    minput <- actualSolutionInput p Nothing
+    let tet = TestRunExecution TestTarget {
+            test_target_problem  = p
+          , test_target_language = l
+          , test_target_bin      = dsb
+          , test_target_input    = minput
+          , test_target_output   = dof
+          }
+    return $ bts ++ [btm, tet]
