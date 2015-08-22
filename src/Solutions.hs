@@ -137,15 +137,16 @@ ioFilePaths p = do
     dir <- problemDir p
     cts <- liftIO $ getDirectoryContents dir
 
-    let ops = filter (isPrefixOf outputName) cts
-    let ips = map ((inputName ++) . drop (length outputName)) ops
-    tts <- mapM (testCase p) $ zip ips ops
+    let os = filter (isPrefixOf outputName) $ cts
+    let is = map ((inputName ++) . drop (length outputName)) os
+    let ifs = map (dir </>) is
+    let ofs = map (dir </>) os
+    tts <- mapM testCase $ zip ifs ofs
     return $ reverse . sortBy (comparing $ length . snd) $ tts
 
-testCase :: Problem -> (FilePath, FilePath) -> Eden c (Maybe FilePath, FilePath)
-testCase p (ip, op) = do
-    dir <- problemDir p
-    exists <- liftIO $ doesFileExist $ dir </> ip
+testCase :: (FilePath, FilePath) -> Eden c (Maybe FilePath, FilePath)
+testCase (ip, op) = do
+    exists <- liftIO $ doesFileExist ip
     return $ if exists
              then (Just ip, op)
              else (Nothing, op)

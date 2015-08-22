@@ -120,12 +120,13 @@ doTestExecution tt = do
     let bin = test_target_bin tt
     let mip = test_target_input tt
     let op  = test_target_output tt
-    actual <- doRunExecution RunTarget {
+    let rt = RunTarget {
             run_target_problem = p
           , run_target_language = l
           , run_target_bin = bin
           , run_target_input = mip
         }
+    actual <- doRunExecution rt
     expected <- readFromFile op
     let same = ["Test:", problemDirName p, padNWith 8 ' ' l ++ ":"]
     if actual /= expected
