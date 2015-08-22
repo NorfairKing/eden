@@ -2,7 +2,7 @@
 title: Contracts
 ---
 
-EDEN makes some assumptions with respect to how you structure your solutions and how your makefiles work.
+EDEN makes some assumptions with respect to how you structure your solutions, how your makefiles work and how your programs work.
 This pages explains how you can make sure that EDEN knows what to do with your solutions.
 
 ### Environment variables
@@ -36,11 +36,17 @@ $EDEN_ROOT
      |- makefile
      |- abc.c
      |- abc.h
+   |- haskell
+     |- makefile
+     |- Primes.hs
  |- test
    |- c
      |- makefile
      |- main.cpp
      |- abc_test.cpp
+   |- haskell
+     |- makefile
+     |- AbcTest.hs
  |- writeup
    |- main.tex
 ```
@@ -63,7 +69,13 @@ You can also have multiple solutions in the same directory.
 For writeups, the problem directory should contain `<problem>/explanation.tex`.
 This will ensure that your explanation of your solution is later included in your writeups.
 
-`eden generate <problem> <language>` will generate this structure for you.
+`eden generate solution <problem> <language>` will generate this structure for you.
+
+#### Program I/O
+
+A solution's input can be provided in the problem directory with an `input.txt` file.
+The expected output can be provided in the problem directory with an `output.txt` file.
+`eden test solution <problem> <language>` will test whether the solution's output equals the contents of the `output.txt` file, as well as checking that `make test` terminates successfully.
 
 #### The `build` directory
 
