@@ -16,6 +16,11 @@ runEdenMake func o = do
         Left err -> error err
         Right a  -> return a
 
+edenMakeIO :: EdenMake a -> EdenMake (IO a)
+edenMakeIO func = do
+  global <- getGlobal
+  return $ runEdenMake func global
+
 getOptions :: Eden c c
 getOptions = fmap snd ask
 

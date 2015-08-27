@@ -5,14 +5,12 @@ import           Eden
 import           Execution
 import           Generate
 import           Init
-import           Make
 import qualified Parser     (getOptions)
 import           Publish
 import           Run
 import           Statistics
 import           Test
 import           Types
-import           Utils
 
 
 main :: IO ()
