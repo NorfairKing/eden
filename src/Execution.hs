@@ -1,14 +1,16 @@
 module Execution where
 
-import           System.Directory (doesDirectoryExist, doesFileExist)
-import           System.Timeout   (timeout)
+import           Control.Concurrent.ParallelIO (parallel_)
+import           System.Directory              (doesDirectoryExist,
+                                                doesFileExist)
+import           System.Timeout                (timeout)
 
-import           Data.List        (nub, sort)
-import           Data.Map         (Map)
-import qualified Data.Map         as M
-import           Data.Maybe       (fromJust)
-import           Data.Tree        (Forest, Tree (..))
-import qualified Data.Tree        as T (levels)
+import           Data.List                     (nub, sort)
+import           Data.Map                      (Map)
+import qualified Data.Map                      as M
+import           Data.Maybe                    (fromJust)
+import           Data.Tree                     (Forest, Tree (..))
+import qualified Data.Tree                     as T (levels)
 
 import           Constants
 import           Eden
@@ -27,8 +29,7 @@ executeForest forest = mapM_ executeLevel finalTree
         let es = sort executions
         let makeFuncs = map executeSafe es
         ioFuncs <- mapM edenMakeIO makeFuncs
-        mapM_ liftIO ioFuncs
-
+        liftIO $ parallel_ ioFuncs
 
     executeSafe :: Execution -> EdenMake ()
     executeSafe e = execute e `catchError` (\e -> liftIO $ putStrLn e)
