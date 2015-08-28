@@ -159,5 +159,5 @@ doTestExecution tt = do
     expected <- readFromFile op
     if actual /= expected
     then          throwError $ unwords $ same ++ ["Fail,", "Expected:", show expected, "Actual:", show actual]
-    else liftIO $ putStrLn   $ unwords $ same ++ ["Success."]
+    else return ()
 
