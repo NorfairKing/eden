@@ -1,14 +1,16 @@
 module Execution where
 
-import           System.Directory (doesDirectoryExist, doesFileExist)
-import           System.Timeout   (timeout)
+import           Control.Concurrent.ParallelIO (parallel_)
+import           System.Directory              (doesDirectoryExist,
+                                                doesFileExist)
+import           System.Timeout                (timeout)
 
-import           Data.List        (nub, sort)
-import           Data.Map         (Map)
-import qualified Data.Map         as M
-import           Data.Maybe       (fromJust)
-import           Data.Tree        (Forest, Tree (..))
-import qualified Data.Tree        as T (levels)
+import           Data.List                     (nub, sort)
+import           Data.Map                      (Map)
+import qualified Data.Map                      as M
+import           Data.Maybe                    (fromJust)
+import           Data.Tree                     (Forest, Tree (..))
+import qualified Data.Tree                     as T (levels)
 
 import           Constants
 import           Eden
@@ -20,10 +22,20 @@ executeGraph :: ExecutionDependencies -> EdenMake ()
 executeGraph ef = executeForest . graphToForest $ toGraph ef
 
 executeForest :: ExecutionForest -> EdenMake ()
-executeForest = mapM_ (mapM_ executeSafe . sort) . aggregate . map T.levels
+executeForest forest = mapM_ executeLevel finalTree
   where
+    executeLevel :: [Execution] -> EdenMake ()
+    executeLevel executions = do
+        let es = sort executions
+        let makeFuncs = map executeSafe es
+        ioFuncs <- mapM edenMakeIO makeFuncs
+        liftIO $ parallel_ ioFuncs
+
     executeSafe :: Execution -> EdenMake ()
     executeSafe e = execute e `catchError` (\e -> liftIO $ putStrLn e)
+
+    finalTree :: [[Execution]]
+    finalTree = aggregate $ map T.levels forest
 
 aggregate :: [[[a]]] -> [[a]]
 aggregate [] = []
@@ -147,5 +159,5 @@ doTestExecution tt = do
     expected <- readFromFile op
     if actual /= expected
     then          throwError $ unwords $ same ++ ["Fail,", "Expected:", show expected, "Actual:", show actual]
-    else liftIO $ putStrLn   $ unwords $ same ++ ["Success."]
+    else return ()
 
