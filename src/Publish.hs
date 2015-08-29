@@ -72,7 +72,7 @@ buildLatex fp = do
     runRaw $ unwords $ [
                   "latexmk"
                 , "-pdf"
-                , "-pdflatex=\"pdflatex -shell-escape -halt-on-error -enable-pipes -enable-write18\""
+                , "-pdflatex=\"pdflatex -shell-escape -halt-on-error -enable-write18\""
                 , fp
                 ]
 
