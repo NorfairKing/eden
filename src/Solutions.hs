@@ -41,11 +41,16 @@ checkProblem p = do
     then return ()
     else throwError $ unwords ["Problem", show p, "hasn't been solved."]
 
+isSolvedIn :: Problem -> Language -> Eden c Bool
+isSolvedIn p l = do
+    dir <- solutionDir p l
+    liftIO $ doesDirectoryExist dir
+
 checkSolution :: Problem -> Language -> Eden c ()
 checkSolution p l = do
     dir <- solutionDir p l
-    exists <- liftIO $ doesDirectoryExist dir
-    if exists
+    solved <- p `isSolvedIn` l
+    if solved
     then return ()
     else throwError $ unwords ["There is no solution in", l, "for problem", show p ++ "."]
 
