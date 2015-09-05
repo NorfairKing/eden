@@ -8,6 +8,8 @@ copyright:           2015
 category:            Development
 build-type:          Simple
 cabal-version:       >=1.10
+description:         project Euler Development ENgine
+synopsis:            project Euler Development ENgine
 
 executable eden
   main-is:             Main.hs
@@ -54,3 +56,8 @@ test-suite eden-tests
                      , containers           >= 0.5  && < 0.6
                      , parallel-io          >= 0.3  && < 0.4
                      , boxes                >= 0.1  && < 0.2
+
+source-repository head
+  type:     git
+  location: https://github.com/NorfairKing/eden
+
