@@ -29,8 +29,8 @@ executeForest ts = do
 
 executeTree :: ExecutionTree -> EdenMake ()
 executeTree t = do
-    executeForest $ subForest t
     executeSafe $ rootLabel t
+    executeForest $ subForest t
   where
     executeSafe :: Execution -> EdenMake ()
     executeSafe e = execute e `catchError` (\e -> liftIO $ putStrLn e)
