@@ -22,31 +22,18 @@ executeGraph :: ExecutionDependencies -> EdenMake ()
 executeGraph ef = executeForest . graphToForest $ toGraph ef
 
 executeForest :: ExecutionForest -> EdenMake ()
-executeForest forest = mapM_ executeLevel finalTree
-  where
-    executeLevel :: [Execution] -> EdenMake ()
-    executeLevel executions = do
-        let es = sort executions
-        let makeFuncs = map executeSafe es
-        ioFuncs <- mapM edenMakeIO makeFuncs
-        liftIO $ parallel_ ioFuncs
+executeForest ts = do
+    let makeFuncs = map executeTree ts
+    ioFuncs <- mapM edenMakeIO makeFuncs
+    liftIO $ parallel_ ioFuncs
 
+executeTree :: ExecutionTree -> EdenMake ()
+executeTree t = do
+    executeForest $ subForest t
+    executeSafe $ rootLabel t
+  where
     executeSafe :: Execution -> EdenMake ()
     executeSafe e = execute e `catchError` (\e -> liftIO $ putStrLn e)
-
-    finalTree :: [[Execution]]
-    finalTree = aggregate $ map T.levels forest
-
-aggregate :: [[[a]]] -> [[a]]
-aggregate [] = []
-aggregate [t] = t
-aggregate (t1:t2:ts) = aggregate $ (aggregateTrees t1 t2):ts
-
-aggregateTrees :: [[a]] -> [[a]] -> [[a]]
-aggregateTrees [] [] = []
-aggregateTrees x  [] = x
-aggregateTrees [] y  = y
-aggregateTrees (t1:ts1) (t2:ts2) = (t1 ++ t2):(aggregateTrees ts1 ts2)
 
 execute :: Execution -> EdenMake ()
 execute (MakeExecution mt)    = doMake mt
