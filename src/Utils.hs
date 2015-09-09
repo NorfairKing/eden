@@ -26,10 +26,23 @@ runCommandWithInput str inf = do
     readProcess bin args instr
   where (bin:args) = words str
 
-
 runCommand :: String -> IO String
 runCommand str = readProcess bin args ""
   where (bin:args) = words str
+
+runCommandWithTiming :: String -> IO (String, Integer)
+runCommandWithTiming cmd = do
+  start <- fmap read $ runCommand "date +%s%N"
+  str <- runCommand cmd
+  end <- fmap read $ runCommand "date +%s%N"
+  return (str, end - start)
+
+runCommandWithTimingAndInput :: String -> FilePath -> IO (String, Integer)
+runCommandWithTimingAndInput cmd inf = do
+  start <- fmap read $ runCommand "date +%s%N"
+  str <- runCommandWithInput cmd inf
+  end <- fmap read $ runCommand "date +%s%N"
+  return (str, (end - start) `div` 1000000)
 
 runRaw :: String -> Eden c ()
 runRaw cmd = do

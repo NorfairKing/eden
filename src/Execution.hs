@@ -129,15 +129,15 @@ doRunExecution rt = do
     then do
         printIf (askGlobal opt_commands) cmd
         let ioFunc = case run_target_input rt of
-                      Nothing  -> runCommand cmd
-                      Just inf -> runCommandWithInput cmd inf
-        result <- do
+                      Nothing  -> runCommandWithTiming cmd
+                      Just inf -> runCommandWithTimingAndInput cmd inf
+        (result, milliTime) <- do
             mresult <- liftIO $ timeout (defaultTimeout * 10^6) $ ioFunc
             case mresult of
               Nothing -> throwError $ unwords $ same ++ ["Execution timed out after", show defaultTimeout, "seconds."]
-              Just rs -> return rs
-        liftIO $ putStr $ unwords $ same ++ [result]
-        return $ read result
+              Just rs -> return $ (\(i,t) -> (read i, t)) rs
+        liftIO $ putStrLn $ unwords $ same ++ [show result, " time:", show milliTime]
+        return result
     else throwError $ unwords $ same ++ ["The executable", cmd, "does not exist."]
 
 
