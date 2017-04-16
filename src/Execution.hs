@@ -22,31 +22,18 @@ executeGraph :: ExecutionDependencies -> EdenMake ()
 executeGraph ef = executeForest . graphToForest $ toGraph ef
 
 executeForest :: ExecutionForest -> EdenMake ()
-executeForest forest = mapM_ executeLevel finalTree
-  where
-    executeLevel :: [Execution] -> EdenMake ()
-    executeLevel executions = do
-        let es = sort executions
-        let makeFuncs = map executeSafe es
-        ioFuncs <- mapM edenMakeIO makeFuncs
-        liftIO $ parallel_ ioFuncs
+executeForest ts = do
+    let makeFuncs = map executeTree ts
+    ioFuncs <- mapM edenMakeIO makeFuncs
+    liftIO $ parallel_ ioFuncs
 
+executeTree :: ExecutionTree -> EdenMake ()
+executeTree t = do
+    executeSafe $ rootLabel t
+    executeForest $ subForest t
+  where
     executeSafe :: Execution -> EdenMake ()
     executeSafe e = execute e `catchError` (\e -> liftIO $ putStrLn e)
-
-    finalTree :: [[Execution]]
-    finalTree = aggregate $ map T.levels forest
-
-aggregate :: [[[a]]] -> [[a]]
-aggregate [] = []
-aggregate [t] = t
-aggregate (t1:t2:ts) = aggregate $ (aggregateTrees t1 t2):ts
-
-aggregateTrees :: [[a]] -> [[a]] -> [[a]]
-aggregateTrees [] [] = []
-aggregateTrees x  [] = x
-aggregateTrees [] y  = y
-aggregateTrees (t1:ts1) (t2:ts2) = (t1 ++ t2):(aggregateTrees ts1 ts2)
 
 execute :: Execution -> EdenMake ()
 execute (MakeExecution mt)    = doMake mt
@@ -123,22 +110,30 @@ doRunExecution rt = do
     let cmd = run_target_bin rt
     let p = run_target_problem rt
     let l = run_target_language rt
-    let same = ["Run: ", problemDirName p, padNWith 8 ' ' l ++ ":"]
+    let same = [padN 3 $ show p, padN 10 l ++ ":"]
     binExists <- liftIO $ doesFileExist cmd
     if binExists
     then do
         printIf (askGlobal opt_commands) cmd
         let ioFunc = case run_target_input rt of
-                      Nothing  -> runCommand cmd
-                      Just inf -> runCommandWithInput cmd inf
-        result <- do
+                      Nothing  -> runCommandWithTiming cmd
+                      Just inf -> runCommandWithTimingAndInput cmd inf
+        (result, time) <- do
             mresult <- liftIO $ timeout (defaultTimeout * 10^6) $ ioFunc
             case mresult of
               Nothing -> throwError $ unwords $ same ++ ["Execution timed out after", show defaultTimeout, "seconds."]
-              Just rs -> return rs
-        liftIO $ putStr $ unwords $ same ++ [result]
-        return $ read result
+              Just rs -> return $ (\(i,t) -> (read i, t)) rs
+        liftIO $ putStrLn $ unwords $ same ++ [padN 12 $ show result, showTime time]
+        return result
     else throwError $ unwords $ same ++ ["The executable", cmd, "does not exist."]
+
+showTime :: Integer -> String
+showTime t | t < 10^3  = f 0 t ++ " ns"
+           | t < 10^6  = f 3 t ++ " µs"
+           | t < 10^9  = f 6 t ++ " ms"
+           | t < 10^12 = f 9 t ++ " s"
+  where f k t = padN 4 $ show (t `div` 10^k)
+
 
 
 doTestExecution :: TestTarget -> EdenMake ()

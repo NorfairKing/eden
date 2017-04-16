@@ -26,10 +26,23 @@ runCommandWithInput str inf = do
     readProcess bin args instr
   where (bin:args) = words str
 
-
 runCommand :: String -> IO String
 runCommand str = readProcess bin args ""
   where (bin:args) = words str
+
+runCommandWithTiming :: String -> IO (String, Integer)
+runCommandWithTiming cmd = do
+  start <- fmap read $ runCommand "date +%s%N"
+  str <- runCommand cmd
+  end <- fmap read $ runCommand "date +%s%N"
+  return (str, end - start)
+
+runCommandWithTimingAndInput :: String -> FilePath -> IO (String, Integer)
+runCommandWithTimingAndInput cmd inf = do
+  start <- fmap read $ runCommand "date +%s%N"
+  str <- runCommandWithInput cmd inf
+  end <- fmap read $ runCommand "date +%s%N"
+  return (str, end - start)
 
 runRaw :: String -> Eden c ()
 runRaw cmd = do
@@ -58,6 +71,9 @@ printIf bool str = do
 
 notImplementedYet :: (Monad m, MonadError String m) => m ()
 notImplementedYet = throwError "This feature is not implemented yet."
+
+padN :: Int -> String -> String
+padN i = padNWith i ' '
 
 padNWith :: Int -> Char -> String -> String
 padNWith m c s = replicate (m - len) c ++ s
