@@ -1,11 +1,14 @@
 {-# LANGUAGE DeriveGeneric #-}
 module Types
     ( module Types
+    , module Data.Monoid
     , module Control.Monad.Except
     , module Control.Monad.IO.Class
     , module Control.Monad.Reader
     , module Control.Monad.Writer
     ) where
+
+import           Data.Monoid
 
 import           Control.Monad.Except   (ExceptT, MonadError, catchError,
                                          runExceptT, throwError)

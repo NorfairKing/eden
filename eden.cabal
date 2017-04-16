@@ -11,6 +11,25 @@ cabal-version:       >=1.10
 
 executable eden
   main-is:             Main.hs
+  other-modules:
+    Build
+    Constants
+    Eden
+    Execution
+    Generate
+    Init
+    Make
+    Parser
+    Paths
+    Publish
+    Run
+    Schedule
+    Solutions
+    Statistics
+    TH
+    Test
+    Types
+    Utils
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -Wall
@@ -20,15 +39,15 @@ executable eden
                        -fno-warn-name-shadowing
                        -threaded
                        -rtsopts -with-rtsopts=-N
-  build-depends:       base                 >= 4.8  && < 4.9
-                     , optparse-applicative >= 0.11 && < 0.12
-                     , directory            >= 1.2  && < 1.3
+  build-depends:       base                 >= 4.8  && < 5
+                     , optparse-applicative >= 0.11 && < 0.14
+                     , directory            >= 1.2  && < 1.4
                      , filepath             >= 1.4  && < 1.5
-                     , transformers         >= 0.4  && < 0.5
+                     , transformers         >= 0.4  && < 0.6
                      , mtl                  >= 2.2  && < 2.3
-                     , process              >= 1.2  && < 1.3
+                     , process              >= 1.2  && < 1.5
                      , heredoc              >= 0.2  && < 0.3
-                     , template-haskell     >= 2.10 && < 2.11
+                     , template-haskell     >= 2.10 && < 2.12
                      , timeit               >= 1.0  && < 1.1
                      , containers           >= 0.5  && < 0.6
                      , parallel-io          >= 0.3  && < 0.4
@@ -39,18 +58,18 @@ test-suite eden-tests
   main-is:             TestMain.hs
   hs-source-dirs:      src, test
   default-language:    Haskell2010
-  build-depends:       base                 >= 4.8  && < 4.9
+  build-depends:       base                 >= 4.8  && < 5
                      , HTF                  >= 0.13 && < 0.14
-                     , HUnit                >= 1.2  && < 1.3
-                     , optparse-applicative >= 0.11 && < 0.12
-                     , directory            >= 1.2  && < 1.3
-                     , filepath             >= 1.4  && < 1.5
-                     , transformers         >= 0.4  && < 0.5
-                     , mtl                  >= 2.2  && < 2.3
-                     , process              >= 1.2  && < 1.3
-                     , heredoc              >= 0.2  && < 0.3
-                     , template-haskell     >= 2.10 && < 2.11
-                     , timeit               >= 1.0  && < 1.1
-                     , containers           >= 0.5  && < 0.6
-                     , parallel-io          >= 0.3  && < 0.4
-                     , boxes                >= 0.1  && < 0.2
+                     , HUnit                >= 1.2  && < 1.6
+                     , optparse-applicative 
+                     , directory            
+                     , filepath            
+                     , transformers       
+                     , mtl               
+                     , process          
+                     , heredoc         
+                     , template-haskell 
+                     , timeit          
+                     , containers     
+                     , parallel-io   
+                     , boxes        
